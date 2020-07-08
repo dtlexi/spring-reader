@@ -83,6 +83,11 @@ import org.springframework.util.ClassUtils;
  * @author Phillip Webb
  * @since 3.0
  */
+
+/**
+ * ConfigurationClassPostProcessor 继承自 BeanDefinitionRegistryPostProcessor类
+ * 这个类将在invokeBeanFactoryPostProcessors方法中被执行
+ */
 public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPostProcessor,
 		PriorityOrdered, ResourceLoaderAware, BeanClassLoaderAware, EnvironmentAware {
 
@@ -220,6 +225,11 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	/**
 	 * Derive further bean definitions from the configuration classes in the registry.
 	 */
+
+	/**
+	 *
+	 *
+	 */
 	@Override
 	public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) {
 		int registryId = System.identityHashCode(registry);
@@ -242,12 +252,19 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	 */
 	@Override
 	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) {
+		// 计算factoryId
 		int factoryId = System.identityHashCode(beanFactory);
+		// 判断factoryId是否已经执行
 		if (this.factoriesPostProcessed.contains(factoryId)) {
 			throw new IllegalStateException(
 					"postProcessBeanFactory already called on this post-processor against " + beanFactory);
 		}
 		this.factoriesPostProcessed.add(factoryId);
+		// 判断ConfigurationClassPostProcessor的postProcessBeanDefinitionRegistry方法是否运行
+		// 因为spring在调用BeanFactoryPostProcessor时先执行其子类BeanDefinitionRegistryPostProcessor的postProcessBeanDefinitionRegistry()
+		// 而在ConfigurationClassPostProcessor的postProcessBeanDefinitionRegistry已经执行了this.registriesPostProcessed.add(registryId);
+		// 故这个if不会进
+		// spring这么写是的原因我猜测是确保postProcessBeanDefinitionRegistry执行，因为扫描Bd等比较重要的方法在此执行
 		if (!this.registriesPostProcessed.contains(factoryId)) {
 			// BeanDefinitionRegistryPostProcessor hook apparently not supported...
 			// Simply call processConfigurationClasses lazily at this point then.
@@ -372,17 +389,22 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	 * @see ConfigurationClassEnhancer
 	 */
 	public void enhanceConfigurationClasses(ConfigurableListableBeanFactory beanFactory) {
+		// 定义一个map，用来放加了@Configuration注解的类
+		// 因为加了@Configuration注解的类，Spring默认会给它加上代理
 		Map<String, AbstractBeanDefinition> configBeanDefs = new LinkedHashMap<>();
 		for (String beanName : beanFactory.getBeanDefinitionNames()) {
 			BeanDefinition beanDef = beanFactory.getBeanDefinition(beanName);
+			// 获取当前bd的configurationClass属性 lite/full
 			Object configClassAttr = beanDef.getAttribute(ConfigurationClassUtils.CONFIGURATION_CLASS_ATTRIBUTE);
 			MethodMetadata methodMetadata = null;
 			if (beanDef instanceof AnnotatedBeanDefinition) {
+				// 如果当前bd是AnnotatedBeanDefinition，获取当前bd的原数据
 				methodMetadata = ((AnnotatedBeanDefinition) beanDef).getFactoryMethodMetadata();
 			}
 			if ((configClassAttr != null || methodMetadata != null) && beanDef instanceof AbstractBeanDefinition) {
 				// Configuration class (full or lite) or a configuration-derived @Bean method
 				// -> resolve bean class at this point...
+				// 判断当前类是否被加载，没有被加载的话加载此类
 				AbstractBeanDefinition abd = (AbstractBeanDefinition) beanDef;
 				if (!abd.hasBeanClass()) {
 					try {
@@ -394,6 +416,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 					}
 				}
 			}
+			// 判断当前配置类是否是full，即当前是否是加了@Configuration注解的类
 			if (ConfigurationClassUtils.CONFIGURATION_CLASS_FULL.equals(configClassAttr)) {
 				if (!(beanDef instanceof AbstractBeanDefinition)) {
 					throw new BeanDefinitionStoreException("Cannot enhance @Configuration bean definition '" +
@@ -405,6 +428,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 							"is a non-static @Bean method with a BeanDefinitionRegistryPostProcessor " +
 							"return type: Consider declaring such methods as 'static'.");
 				}
+				// 将当前类加到map中去
 				configBeanDefs.put(beanName, (AbstractBeanDefinition) beanDef);
 			}
 		}
@@ -413,6 +437,8 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			return;
 		}
 
+		// 下面就是核心类
+		// 给加了@Configuration注解的配置类添加代理
 		ConfigurationClassEnhancer enhancer = new ConfigurationClassEnhancer();
 		for (Map.Entry<String, AbstractBeanDefinition> entry : configBeanDefs.entrySet()) {
 			AbstractBeanDefinition beanDef = entry.getValue();

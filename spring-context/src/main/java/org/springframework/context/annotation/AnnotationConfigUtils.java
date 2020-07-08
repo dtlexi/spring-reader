@@ -160,6 +160,12 @@ public abstract class AnnotationConfigUtils {
 
 		Set<BeanDefinitionHolder> beanDefs = new LinkedHashSet<>(8);
 
+		/**
+		 * 下面，Spring将注册5个类，这也是Spring的5个开天辟地的类
+		 */
+
+		// 1. 注册ConfigurationClassPostProcessor
+		// 这个类可以用来扫描注解，解析@Configurable，解析@Import,解析@Bean,解析@ImportResource
 		if (!registry.containsBeanDefinition(CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME)) {
 			RootBeanDefinition def = new RootBeanDefinition(ConfigurationClassPostProcessor.class);
 			def.setSource(source);
