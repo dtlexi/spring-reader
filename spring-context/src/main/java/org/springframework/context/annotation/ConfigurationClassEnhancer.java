@@ -95,6 +95,7 @@ class ConfigurationClassEnhancer {
 	 * @return the enhanced subclass
 	 */
 	public Class<?> enhance(Class<?> configClass, @Nullable ClassLoader classLoader) {
+		// 判断当前配置类是否已经被代理过
 		if (EnhancedConfiguration.class.isAssignableFrom(configClass)) {
 			if (logger.isDebugEnabled()) {
 				logger.debug(String.format("Ignoring request to enhance %s as it has " +
@@ -106,6 +107,7 @@ class ConfigurationClassEnhancer {
 			}
 			return configClass;
 		}
+		// 正式创建代理类
 		Class<?> enhancedClass = createClass(newEnhancer(configClass, classLoader));
 		if (logger.isTraceEnabled()) {
 			logger.trace(String.format("Successfully enhanced %s; enhanced class name is: %s",
@@ -117,11 +119,18 @@ class ConfigurationClassEnhancer {
 	/**
 	 * Creates a new CGLIB {@link Enhancer} instance.
 	 */
+
+	/**
+	 * 创建衣蛾Cglib代理
+	 */
 	private Enhancer newEnhancer(Class<?> configSuperClass, @Nullable ClassLoader classLoader) {
 		Enhancer enhancer = new Enhancer();
+		// 设置父类
 		enhancer.setSuperclass(configSuperClass);
+		// 设置接口，之前判断是否已经被代理就用的这个接口
 		enhancer.setInterfaces(new Class<?>[] {EnhancedConfiguration.class});
 		enhancer.setUseFactory(false);
+		// 代理对象名字生成策略
 		enhancer.setNamingPolicy(SpringNamingPolicy.INSTANCE);
 		enhancer.setStrategy(new BeanFactoryAwareGeneratorStrategy(classLoader));
 		enhancer.setCallbackFilter(CALLBACK_FILTER);
@@ -314,6 +323,13 @@ class ConfigurationClassEnhancer {
 				}
 			}
 
+			/**
+			 * 这边大致是判断当前执行的方法 和 正在创建对象的方法是否是同一个方法
+			 * spring实例化@Bean对象时，会先将当前方法放到`ThreadLocal<Method> currentlyInvokedFactoryMethod`中去
+			 * spring 在这边拿出这个方法，用来判断当前执行方法和正在被实例化对象的方法是否是同一个方法，包括参数啥的是否相同
+			 * 如果相同，表示当前正在执行实例化对象方法，调用当前方法创建对象
+			 * 如果不相同，表示在其他方法中调用当前方法，直接返回 beanFactory.getBean(beanName)
+			 */
 			if (isCurrentlyInvokedFactoryMethod(beanMethod)) {
 				// The factory is calling the bean method in order to instantiate and register the bean
 				// (i.e. via a getBean() call) -> invoke the super implementation of the method to actually
@@ -328,9 +344,13 @@ class ConfigurationClassEnhancer {
 									"these container lifecycle issues; see @Bean javadoc for complete details.",
 							beanMethod.getDeclaringClass().getSimpleName(), beanMethod.getName()));
 				}
+				/**
+				 * 这边是InvokeSuper,而不是invoke
+				 * 这边不大好理解，注意这两个方法的区别
+				 */
 				return cglibMethodProxy.invokeSuper(enhancedConfigInstance, beanMethodArgs);
 			}
-
+			// 直接获取代理对象生成的Bean对象
 			return resolveBeanReference(beanMethod, beanMethodArgs, beanFactory, beanName);
 		}
 

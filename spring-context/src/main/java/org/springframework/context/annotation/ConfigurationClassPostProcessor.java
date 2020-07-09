@@ -439,19 +439,27 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 
 		// 下面就是核心类
 		// 给加了@Configuration注解的配置类添加代理
+
+		// 实例化ConfigurationClassEnhancer,通过这个类来对配置类完成代理
 		ConfigurationClassEnhancer enhancer = new ConfigurationClassEnhancer();
+		// 循环所有full配置类
 		for (Map.Entry<String, AbstractBeanDefinition> entry : configBeanDefs.entrySet()) {
+			// 获取当前配置类的bdf
 			AbstractBeanDefinition beanDef = entry.getValue();
 			// If a @Configuration class gets proxied, always proxy the target class
+			// 暂时不知道这一步干什么的，但是估计和代理有关系
 			beanDef.setAttribute(AutoProxyUtils.PRESERVE_TARGET_CLASS_ATTRIBUTE, Boolean.TRUE);
 			// Set enhanced subclass of the user-specified bean class
+			// 拿到当前配置类
 			Class<?> configClass = beanDef.getBeanClass();
+			// 产生代理对象,核心方法
 			Class<?> enhancedClass = enhancer.enhance(configClass, this.beanClassLoader);
 			if (configClass != enhancedClass) {
 				if (logger.isTraceEnabled()) {
 					logger.trace(String.format("Replacing bean definition '%s' existing class '%s' with " +
 							"enhanced class '%s'", entry.getKey(), configClass.getName(), enhancedClass.getName()));
 				}
+				// 将代理对象的class设置给当前bdf
 				beanDef.setBeanClass(enhancedClass);
 			}
 		}
