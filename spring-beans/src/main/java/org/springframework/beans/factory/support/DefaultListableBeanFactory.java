@@ -869,8 +869,18 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		// Trigger initialization of all non-lazy singleton beans...
 		for (String beanName : beanNames) {
 			RootBeanDefinition bd = getMergedLocalBeanDefinition(beanName);
+			// 判断是否是abstract 注意这边的abstract不是指抽象类，而是指<bean id="xxx" abstract="true" />
+			// 判断是否单例
+			// 判断是否懒加载，懒加载不在这边实例化
 			if (!bd.isAbstract() && bd.isSingleton() && !bd.isLazyInit()) {
+				// 判断当前对象是否是FactoryBean
 				if (isFactoryBean(beanName)) {
+					// 这边是获取FactoryBean对象，不是指FactoryBean的getObject()返回对象
+					// 如果一个Bean是通过FactoryBean创建的，那么Spring能同时获取俩个对象
+					// 		一个是指当前FactoryBean本身对象，其BeanName是‘&beanName’
+					//		另一个是指FactoryBean getObject()返回的对象，其BeanName就是'beanName'
+					// 但是这并不代表着Spring在容器(singleObjects/bdMaps)中保存了俩个对象
+					// 其实spring容器中始终只保存了beanFactory对象本身一个对象
 					Object bean = getBean(FACTORY_BEAN_PREFIX + beanName);
 					if (bean instanceof FactoryBean) {
 						final FactoryBean<?> factory = (FactoryBean<?>) bean;
@@ -1153,8 +1163,11 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			ResolvableType requiredType, @Nullable Object[] args, boolean nonUniqueAsNull) throws BeansException {
 
 		Assert.notNull(requiredType, "Required type must not be null");
+
+		// 获取bean的所有名字，包括别名
 		String[] candidateNames = getBeanNamesForType(requiredType);
 
+		// if candidateNames.length > 1 表示当前有别名，需要做别名处理
 		if (candidateNames.length > 1) {
 			List<String> autowireCandidates = new ArrayList<>(candidateNames.length);
 			for (String beanName : candidateNames) {
@@ -1167,6 +1180,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			}
 		}
 
+		// if candidateNames.length == 1 表示当前bean没有别名
 		if (candidateNames.length == 1) {
 			String beanName = candidateNames[0];
 			return new NamedBeanHolder<>(beanName, (T) getBean(beanName, requiredType.toClass(), args));

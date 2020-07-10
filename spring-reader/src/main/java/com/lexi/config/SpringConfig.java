@@ -13,19 +13,19 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 @Configuration
 @ComponentScan("com.lexi")
 public class SpringConfig {
-	@Bean
-	public HelloServiceCreateByAnnoBeanAndFactoryBean createHelloServiceCreateByAnnoBeanAndFactoryBean()
-	{
-		System.out.println("创建HelloServiceCreateByAnnoBeanAndFactoryBean对象-1");
-		createHelloServiceCreateByAnnoBean();
-		System.out.println("创建HelloServiceCreateByAnnoBeanAndFactoryBean对象-2");
-		return new HelloServiceCreateByAnnoBeanAndFactoryBean();
-	}
-
-	@Bean
-	public HelloServiceCreateByAnnoBean createHelloServiceCreateByAnnoBean()
-	{
-		System.out.println("创建HelloServiceCreateByAnnoBean对象");
-		return new HelloServiceCreateByAnnoBean();
-	}
+//	@Bean
+//	public HelloServiceCreateByAnnoBeanAndFactoryBean createHelloServiceCreateByAnnoBeanAndFactoryBean()
+//	{
+//		System.out.println("创建HelloServiceCreateByAnnoBeanAndFactoryBean对象-1");
+//		createHelloServiceCreateByAnnoBean();
+//		System.out.println("创建HelloServiceCreateByAnnoBeanAndFactoryBean对象-2");
+//		return new HelloServiceCreateByAnnoBeanAndFactoryBean();
+//	}
+//
+//	@Bean
+//	public HelloServiceCreateByAnnoBean createHelloServiceCreateByAnnoBean()
+//	{
+//		System.out.println("创建HelloServiceCreateByAnnoBean对象");
+//		return new HelloServiceCreateByAnnoBean();
+//	}
 }

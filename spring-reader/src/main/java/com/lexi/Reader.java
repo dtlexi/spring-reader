@@ -11,6 +11,12 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 public class Reader {
 	public static void main(String[] args) throws Exception {
 		ApplicationContext context=new AnnotationConfigApplicationContext(SpringConfig.class);
-		context.getBean(HelloServiceCreateByAnnoBean.class).say();
+//		System.out.println(context.getBean("helloServiceFactoryBean"));
+//		System.out.println(context.getBean("helloServiceFactoryBean"));
+//		System.out.println(context.getBean("helloServiceFactoryBean"));
+//		System.out.println(context.getBean("helloServiceFactoryBean"));
+//		System.out.println(context.getBean("&helloServiceFactoryBean"));
+
+		context.getBean(HelloServiceCreateByAnnoBean.class);
 	}
 }
