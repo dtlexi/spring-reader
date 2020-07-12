@@ -154,6 +154,9 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	protected void addSingletonFactory(String beanName, ObjectFactory<?> singletonFactory) {
 		Assert.notNull(singletonFactory, "Singleton factory must not be null");
 		synchronized (this.singletonObjects) {
+			// this singletonFactory is a lamb
+			// () -> getEarlyBeanReference(beanName, mbd, bean)
+			// from AbstractAutowireCapableBeanFactory line 607
 			if (!this.singletonObjects.containsKey(beanName)) {
 				this.singletonFactories.put(beanName, singletonFactory);
 				this.earlySingletonObjects.remove(beanName);
@@ -178,23 +181,54 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	 */
 	@Nullable
 	protected Object getSingleton(String beanName, boolean allowEarlyReference) {
-		/**
-		 * 第一次调用这个方法时：
-		 *
-		 */
-
 		// 从容器当中获取bean
 		// 第一次调用这个方法时，singletonObject肯定为空
+
+		// 第二次调用：
+		// 	循环引用是：为空
 		Object singletonObject = this.singletonObjects.get(beanName);
 		// 如果bean==null && bean正在创建中
 		// isSingletonCurrentlyInCreation 是判断当前对象是否正在创建中
 		// 其主要是判断this.singletonsCurrentlyInCreation对象中是否包含beanName,
 		// 第一次调用是肯定不存在
 		// 所以第一次调用这个方法时肯定不会进入这个if
+		// 第二次调用时：
+		// 	循环引用：会进入这个if
 		if (singletonObject == null && isSingletonCurrentlyInCreation(beanName)) {
 			synchronized (this.singletonObjects) {
+				/**
+				 * spring解决循环依赖用了三个map。
+				 * 有人可能会好奇明明俩个map就能解决的事为啥非得用三个map来解决呢？
+				 * 其实这边三个map都是有他的用处的
+				 *
+				 * 第一个map singletonObjects 用来放完全体的对象，
+				 * 这边的完全体指实例化出来，完成属性赋值，有代理的完成了代理可以直接使用的对象
+				 *
+				 * 第二个map earlySingletonObjects 用来存放已经实例化，但还没有可以直接使用的对象
+				 *
+				 * 第三个map singletonFactories 用来存放生产对象的工厂，其实这边就是存放的lamb表达式
+				 *
+				 * 有人可能会问为什么不直接使用 singletonObjects 和 singletonFactories
+				 * 为什么还要再加一个 earlySingletonObjects？
+				 * 如果不适用earlySingletonObjects有俩种解决方法：我们来分析一下是否可行
+				 * 	1. 	每次都调用singletonFactories.get()重新生产一个对象
+				 * 		这种方案明显行不通，每次重新get一个相当于每次都执行 getEarlyBeanReference，效率低
+				 * 	2. 	对象初始化出来后直接放入 singletonFactories 中，这样看似能解决上面的问题
+				 * 		但是你想想 singletonFactories 的作用。singletonFactories中存放的是完整的对象，即取即用的。
+				 * 		如果对象没有初始化完成就放入 singletonFactories 中，那么每次取出该对象时都没法确定该对象是否初始化完成
+				 * 		每次使用该对象是我都得去判断一下该对象是否初始化完成，这个不好判断不说，关键浪费性能
+				 * 还有人可能问为什么不用 singletonObjects 和 earlySingletonObjects 呢
+				 * 		因为循环引用是可能出现aop，而一般aop是在属性赋值完后开始代理的(populateBean()方法后)，如果刚开始就直接放入将对象放入 populateBean
+				 * 		那么拿出的对象时代理对象之前的对象，不是我们想要的对象，而传入一个工厂对象就不一样了，我们想要什么对象，就能生产什么对象
+				 *
+				 * 为什么不直接将aop提到populateBean之前
+				 * 我哪知道，问spring去
+				 */
 				singletonObject = this.earlySingletonObjects.get(beanName);
 				if (singletonObject == null && allowEarlyReference) {
+					// this.singletonFactories.put is in addSingletonFactory
+					// AbstractAutowireCapableBeanFactory getEarlyBeanReference
+					// 这边的 singletonFactory.getObject 不是new 对象，而是处理对象 具体是执行
 					ObjectFactory<?> singletonFactory = this.singletonFactories.get(beanName);
 					if (singletonFactory != null) {
 						singletonObject = singletonFactory.getObject();

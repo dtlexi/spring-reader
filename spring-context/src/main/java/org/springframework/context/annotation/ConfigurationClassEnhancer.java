@@ -324,6 +324,7 @@ class ConfigurationClassEnhancer {
 			}
 
 			/**
+			 * 下面主要是判断当前执行的@Bean注解方法是Spring实例化调用还是开发者在其他地方调用
 			 * 这边大致是判断当前执行的方法 和 正在创建对象的方法是否是同一个方法
 			 * spring实例化@Bean对象时，会先将当前方法放到`ThreadLocal<Method> currentlyInvokedFactoryMethod`中去
 			 * spring 在这边拿出这个方法，用来判断当前执行方法和正在被实例化对象的方法是否是同一个方法，包括参数啥的是否相同

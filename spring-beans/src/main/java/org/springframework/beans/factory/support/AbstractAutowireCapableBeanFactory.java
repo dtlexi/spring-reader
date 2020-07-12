@@ -591,7 +591,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		// Eagerly cache singletons to be able to resolve circular references
 		// even when triggered by lifecycle interfaces like BeanFactoryAware.
 
-		// this.allowCircularReferences是否允许循环依赖，可以在beanFactory中设置
+
+		// this.allowCircularReferences是否允许循环依赖，可以通过setAllowCircularReferences()设置
 		// 这边主要是检查当前是否是单例对象，是否允许循环依赖
 		boolean earlySingletonExposure = (mbd.isSingleton() && this.allowCircularReferences &&
 				isSingletonCurrentlyInCreation(beanName));
@@ -600,13 +601,20 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				logger.trace("Eagerly caching bean '" + beanName +
 						"' to allow for resolving potential circular references");
 			}
+			// 第四次调用后置处理器，在getEarlyBeanReference方法里面
+			// 如果允许调用循环引用，这边会往beanFactory的singletonFactories put lamb表达式
+			// () -> getEarlyBeanReference(beanName, mbd, bean)
 			addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
 		}
 
 		// Initialize the bean instance.
 		Object exposedObject = bean;
 		try {
+			// 填充属性
+			// 里面会完成第五次第六次后置处理器调用
 			populateBean(beanName, mbd, instanceWrapper);
+			// 初始化Spring,不是实例化
+			// 第七次第八次后置处理器调用
 			exposedObject = initializeBean(beanName, exposedObject, mbd);
 		}
 		catch (Throwable ex) {
