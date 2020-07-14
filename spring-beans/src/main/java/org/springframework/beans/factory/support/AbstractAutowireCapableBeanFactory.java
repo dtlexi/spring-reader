@@ -508,6 +508,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		try {
 			// Give BeanPostProcessors a chance to return a proxy instead of the target bean instance.
+			// 这边第一次调用了后置处理器
+			// 这边处理的TargetSource,
 			Object bean = resolveBeforeInstantiation(beanName, mbdToUse);
 			if (bean != null) {
 				return bean;
@@ -604,6 +606,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			// 第四次调用后置处理器，在getEarlyBeanReference方法里面
 			// 如果允许调用循环引用，这边会往beanFactory的singletonFactories put lamb表达式
 			// () -> getEarlyBeanReference(beanName, mbd, bean)
+			// getEarlyBeanReference 是提前调用aop的方法产生代理对象
+			// 这边也是spring aop 解决循环依赖同时又能兼顾aop的核心
 			addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
 		}
 
@@ -1131,7 +1135,34 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		Object bean = null;
 		if (!Boolean.FALSE.equals(mbd.beforeInstantiationResolved)) {
 			// Make sure bean class is actually resolved at this point.
+
+			/**
+			 * mbd.isSynthetic() 判断当前类是否是合成类，合成类指的是
+			 * class A{
+			 *     class B{
+			 *         private B()
+			 *         {
+			 *
+			 *         }
+			 *     }
+			 *     psvm(){
+			 *         B b=new B();
+			 *
+			 *     }
+			 * }
+			 * 因为B的构造方法私有化，但是在内的类的外部类中，有可以调用内部类的私有方法，字段等，
+			 * 此时可以在A中实例化B
+			 * JVM通过构建内外一个类来实现的，此时有三个class文件。而spring的扫描时扫描类文件。
+			 * 所以此时要判断是否是合成类
+			 *
+			 * hasInstantiationAwareBeanPostProcessors()：
+			 * 判断当前是否有后置处理器实现了InstantiationAwareBeanPostProcessors，
+			 * AspectJAutoProxyCreator就是实现了这个类
+			 *
+			 * 这边第一次调用了后置处理器
+			 */
 			if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
+				//获取当前bd对应的Class
 				Class<?> targetType = determineTargetType(beanName, mbd);
 				if (targetType != null) {
 					bean = applyBeanPostProcessorsBeforeInstantiation(targetType, beanName);
@@ -1184,6 +1215,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 */
 	protected BeanWrapper createBeanInstance(String beanName, RootBeanDefinition mbd, @Nullable Object[] args) {
 		// Make sure bean class is actually resolved at this point.
+		// 拿到bean对应的class
 		Class<?> beanClass = resolveBeanClass(mbd, beanName);
 
 		if (beanClass != null && !Modifier.isPublic(beanClass.getModifiers()) && !mbd.isNonPublicAccessAllowed()) {
@@ -1196,21 +1228,39 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			return obtainFromSupplier(instanceSupplier, beanName);
 		}
 
+		// 处理 factoryMethod
+		// @Bean
 		if (mbd.getFactoryMethodName() != null) {
 			return instantiateUsingFactoryMethod(beanName, mbd, args);
 		}
 
 		// Shortcut when re-creating the same bean...
+
+		// 创建一个对象一般就俩种方法，new or reflection
+		// spring 这边只能采用反射
+		// 那么spring就需要知道采用什么构造方法
+		// 下面spring需要做的就是推断构造方法
+
+		// resolved 构造方法缓存 推导出来的构造方法将会存储到mbd.resolvedConstructorOrFactoryMethod
+		// 这种情况一般用在prototype
+
 		boolean resolved = false;
 		boolean autowireNecessary = false;
+
+		// 这个args 没找到地方不为null
+		// 可能spring会在其他框架中扩展他，重写createBean()
 		if (args == null) {
 			synchronized (mbd.constructorArgumentLock) {
+				// 判断当前bd有没有推导出构造方法
+				// mbd.resolvedConstructorOrFactoryMethod 被解析出的构造方法或者工厂方法的缓存
 				if (mbd.resolvedConstructorOrFactoryMethod != null) {
 					resolved = true;
 					autowireNecessary = mbd.constructorArgumentsResolved;
 				}
 			}
 		}
+
+		// 使用推倒出的构造方法创建对象
 		if (resolved) {
 			if (autowireNecessary) {
 				return autowireConstructor(beanName, mbd, null, null);

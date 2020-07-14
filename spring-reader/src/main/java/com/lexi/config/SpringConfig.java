@@ -5,13 +5,12 @@ import com.lexi.service.HelloServiceCreateByAnnoBeanAndFactoryBean;
 import com.lexi.service.HelloServiceFactoryBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Configurable;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.context.annotation.*;
 
 @Configuration
 @ComponentScan("com.lexi")
+@EnableAspectJAutoProxy
+@ImportResource("classpath:beans.xml")
 public class SpringConfig {
 //	@Bean
 //	public HelloServiceCreateByAnnoBeanAndFactoryBean createHelloServiceCreateByAnnoBeanAndFactoryBean()

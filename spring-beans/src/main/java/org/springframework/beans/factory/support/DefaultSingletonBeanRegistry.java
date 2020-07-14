@@ -201,18 +201,30 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 				 * 有人可能会好奇明明俩个map就能解决的事为啥非得用三个map来解决呢？
 				 * 其实这边三个map都是有他的用处的
 				 *
-				 * 第一个map singletonObjects 用来放完全体的对象，
+				 * 第一个map singletonObjects 用来放完全体的Bean，
 				 * 这边的完全体指实例化出来，完成属性赋值，有代理的完成了代理可以直接使用的对象
 				 *
 				 * 第二个map earlySingletonObjects 用来存放已经实例化，但还没有可以直接使用的对象
 				 *
-				 * 第三个map singletonFactories 用来存放生产对象的工厂，其实这边就是存放的lamb表达式
+				 * 第三个map singletonFactories 用来存放对象工厂，这个对象工厂不是生产对象，而是对已经存在的对象进行加工，
+				 * 这个比较抽象，举个例子：
+				 * class A{
+				 * 		@Autowired
+				 * 		private B b;
+				 * }
+				 * class B{
+				 * 		@Autowired
+				 * 		private A a;
+				 * }
+				 * 循环依赖在属性填充时，a,b都需要添加代理，那么A.b和B.a都应该是代理后的对象
+				 * 但是spring aop 添加代理是在属性填充完成之后
+				 * 此时工厂的作用就是生产一个代理对象，详见AbstractAutoProxyCreator
 				 *
 				 * 有人可能会问为什么不直接使用 singletonObjects 和 singletonFactories
 				 * 为什么还要再加一个 earlySingletonObjects？
 				 * 如果不适用earlySingletonObjects有俩种解决方法：我们来分析一下是否可行
-				 * 	1. 	每次都调用singletonFactories.get()重新生产一个对象
-				 * 		这种方案明显行不通，每次重新get一个相当于每次都执行 getEarlyBeanReference，效率低
+				 * 	1. 	每次都调用singletonFactories.get(),此时会重新生产一个代理对象
+				 * 		这种方案明显行不通，每次重新get一个相当于每次都执行 getEarlyBeanReference，重新产生一个代理对象，效率低
 				 * 	2. 	对象初始化出来后直接放入 singletonFactories 中，这样看似能解决上面的问题
 				 * 		但是你想想 singletonFactories 的作用。singletonFactories中存放的是完整的对象，即取即用的。
 				 * 		如果对象没有初始化完成就放入 singletonFactories 中，那么每次取出该对象时都没法确定该对象是否初始化完成
