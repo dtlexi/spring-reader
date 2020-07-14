@@ -1,8 +1,18 @@
 package com.lexi.service;
 
 public class HelloServiceByXml {
-	public HelloServiceByXml(String name)
+	public HelloServiceByXml()
 	{
-		System.out.println(name);
+
+	}
+
+	public HelloServiceByXml(HelloService helloService)
+	{
+
+	}
+
+	public HelloServiceByXml(HelloService helloService,HelloServiceCreateByAnnoBean helloServiceCreateByAnnoBean)
+	{
+
 	}
 }

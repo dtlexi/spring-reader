@@ -1,5 +1,7 @@
 package com.lexi.service;
 
+import org.springframework.context.annotation.Bean;
+
 /**
  * 使用@Bean注解创建的
  */

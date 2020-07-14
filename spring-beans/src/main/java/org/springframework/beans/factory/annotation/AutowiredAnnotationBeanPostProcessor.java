@@ -293,14 +293,22 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 		}
 
 		// Quick check on the concurrent map first, with minimal locking.
+
+		// candidateConstructors 已经推断过构造方法的类的Map
+		// 这边为什么要缓存？
+		// prototype 不会走到这边。
+		// singleton 更不会走到这边
+		// 目前没找到哪边用到
 		Constructor<?>[] candidateConstructors = this.candidateConstructorsCache.get(beanClass);
 		if (candidateConstructors == null) {
 			// Fully synchronized resolution now...
 			synchronized (this.candidateConstructorsCache) {
+				// 在拿一次，防止多线程
 				candidateConstructors = this.candidateConstructorsCache.get(beanClass);
 				if (candidateConstructors == null) {
 					Constructor<?>[] rawCandidates;
 					try {
+						// 拿到所有的构造方法
 						rawCandidates = beanClass.getDeclaredConstructors();
 					}
 					catch (Throwable ex) {
@@ -308,21 +316,31 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 								"Resolution of declared constructors on bean Class [" + beanClass.getName() +
 								"] from ClassLoader [" + beanClass.getClassLoader() + "] failed", ex);
 					}
+
+					// 找出的合格的构造方法
 					List<Constructor<?>> candidates = new ArrayList<>(rawCandidates.length);
+					// 必要的构造方法，@Autowired
 					Constructor<?> requiredConstructor = null;
+					// 默认的构造方法
 					Constructor<?> defaultConstructor = null;
+					// 返回Kotlin的构造方法，非 Kotlin 永远返回null。对于java类来说，永远返回none，不用关系这边
 					Constructor<?> primaryConstructor = BeanUtils.findPrimaryConstructor(beanClass);
 					int nonSyntheticConstructors = 0;
+					// 循环当前所有的构造方法
 					for (Constructor<?> candidate : rawCandidates) {
+						// 判断当前是否是合成方法
 						if (!candidate.isSynthetic()) {
 							nonSyntheticConstructors++;
 						}
 						else if (primaryConstructor != null) {
 							continue;
 						}
+						// @Autowired
 						MergedAnnotation<?> ann = findAutowiredAnnotation(candidate);
 						if (ann == null) {
 							Class<?> userClass = ClassUtils.getUserClass(beanClass);
+							// factory bean?
+							// 内部内？
 							if (userClass != beanClass) {
 								try {
 									Constructor<?> superCtor =
@@ -343,6 +361,8 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 							}
 							boolean required = determineRequiredStatus(ann);
 							if (required) {
+								// 判断candidates为空，不为空就报错
+								// 不为空表示有多个@Autowired
 								if (!candidates.isEmpty()) {
 									throw new BeanCreationException(beanName,
 											"Invalid autowire-marked constructors: " + candidates +
