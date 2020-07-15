@@ -1,10 +1,7 @@
 package com.lexi;
 
 import com.lexi.config.SpringConfig;
-import com.lexi.service.HelloService;
-import com.lexi.service.HelloServiceCreateByAnnoBean;
-import com.lexi.service.HelloServiceCreateByAnnoBeanAndFactoryBean;
-import com.lexi.service.HelloServiceFactoryBean;
+import com.lexi.service.*;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
@@ -17,6 +14,6 @@ public class Reader {
 //		System.out.println(context.getBean("helloServiceFactoryBean"));
 //		System.out.println(context.getBean("&helloServiceFactoryBean"));
 
-		context.getBean(HelloServiceCreateByAnnoBeanAndFactoryBean.class);
+		context.getBean(HelloServiceByXml.class);
 	}
 }

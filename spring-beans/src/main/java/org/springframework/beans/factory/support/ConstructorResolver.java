@@ -128,10 +128,14 @@ class ConstructorResolver {
 		BeanWrapperImpl bw = new BeanWrapperImpl();
 		this.beanFactory.initBeanWrapper(bw);
 
+		// 最后被确定使用的构造方法
 		Constructor<?> constructorToUse = null;
+		// 构造方法对应的参数封装
 		ArgumentsHolder argsHolderToUse = null;
 		Object[] argsToUse = null;
 
+		// explicitArgs 前面传递过来的参数，如果不为空就用这个参数构建，
+		// 但是这个参数好像都为空，目前没找到参数不为空的地方
 		if (explicitArgs != null) {
 			argsToUse = explicitArgs;
 		}
@@ -148,6 +152,7 @@ class ConstructorResolver {
 				}
 			}
 			if (argsToResolve != null) {
+				// 参数类型转换
 				argsToUse = resolvePreparedArguments(beanName, mbd, bw, constructorToUse, argsToResolve, true);
 			}
 		}

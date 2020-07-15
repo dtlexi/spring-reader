@@ -1274,8 +1274,13 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		// 第二次执行执行后置处理器BeanPostProcessor
 		Constructor<?>[] ctors = determineConstructorsFromBeanPostProcessors(beanClass, beanName);
+		// ctors != null
+		// AUTOWIRE_CONSTRUCTOR
+		// mbd.hasConstructorArgumentValues() 这个可以看看@MapperScan 设置MapperFactoryBean的构造参数
+		// args 是传递过来的，暂时不知道哪边用过
 		if (ctors != null || mbd.getResolvedAutowireMode() == AUTOWIRE_CONSTRUCTOR ||
 				mbd.hasConstructorArgumentValues() || !ObjectUtils.isEmpty(args)) {
+
 			return autowireConstructor(beanName, mbd, ctors, args);
 		}
 

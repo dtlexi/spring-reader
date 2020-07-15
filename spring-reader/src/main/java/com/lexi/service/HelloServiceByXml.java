@@ -1,18 +1,22 @@
 package com.lexi.service;
 
-public class HelloServiceByXml {
-	public HelloServiceByXml()
-	{
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-	}
+public class HelloServiceByXml {
+//	public HelloServiceByXml()
+//	{
+//
+//	}
 
 	public HelloServiceByXml(HelloService helloService)
 	{
 
 	}
 
-	public HelloServiceByXml(HelloService helloService,HelloServiceCreateByAnnoBean helloServiceCreateByAnnoBean)
-	{
-
-	}
+//	@Autowired
+//	public HelloServiceByXml(HelloService helloService,HelloServiceCreateByAnnoBean helloServiceCreateByAnnoBean)
+//	{
+//
+//	}
 }
