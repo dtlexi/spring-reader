@@ -8,14 +8,16 @@ public class HelloServiceByXml {
 //	{
 //
 //	}
-
-	public HelloServiceByXml(HelloService helloService)
-	{
-
-	}
-
-//	@Autowired
-//	public HelloServiceByXml(HelloService helloService,HelloServiceCreateByAnnoBean helloServiceCreateByAnnoBean)
+//	@Autowired(required = false)
+//	public HelloServiceByXml(HelloService helloService)
+//	{
+//
+//	}
+//
+//	@Autowired(required = false)
+//	public HelloServiceByXml(HelloService helloService,
+//							 HelloServiceCreateByAnnoBean helloServiceCreateByAnnoBean,
+//							 TestFindConstractService testFindConstractService)
 //	{
 //
 //	}

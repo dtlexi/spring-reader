@@ -160,9 +160,16 @@ class ConstructorResolver {
 		if (constructorToUse == null || argsToUse == null) {
 			// Take specified constructors, if any.
 			Constructor<?>[] candidates = chosenCtors;
+
+			// candidates == null 表示determineConstructorsFromBeanPostProcessors没有找到构造方法
+			// 表示当前类
+			// 		1. 没有@Autowired的构造方法
+			//		2. 多个构造方法
+			// 		3. 只有默认构造方法
 			if (candidates == null) {
 				Class<?> beanClass = mbd.getBeanClass();
 				try {
+					// 重新获取当前beanClass的所有构造方法
 					candidates = (mbd.isNonPublicAccessAllowed() ?
 							beanClass.getDeclaredConstructors() : beanClass.getConstructors());
 				}
@@ -173,24 +180,38 @@ class ConstructorResolver {
 				}
 			}
 
+			// candidates.length==1 表示 determineConstructorsFromBeanPostProcessors 找到了一个构造方法
+			// 这种只有俩种情况：
+			// 	1. 表示当前类有且只有一个构造方法，并且当前构造方法有参数
+			//  2. 表示当前类有一个构造方法@Autowired(required=true)
+			// explicitArgs == null && !mbd.hasConstructorArgumentValues() 表示没有指定当前构造方法的参数
 			if (candidates.length == 1 && explicitArgs == null && !mbd.hasConstructorArgumentValues()) {
 				Constructor<?> uniqueCandidate = candidates[0];
 				if (uniqueCandidate.getParameterCount() == 0) {
 					synchronized (mbd.constructorArgumentLock) {
+						// 设置当前参数的构造方法
 						mbd.resolvedConstructorOrFactoryMethod = uniqueCandidate;
 						mbd.constructorArgumentsResolved = true;
 						mbd.resolvedConstructorArguments = EMPTY_ARGS;
 					}
+					// 实例化当前对象
 					bw.setBeanInstance(instantiate(beanName, mbd, uniqueCandidate, EMPTY_ARGS));
 					return bw;
 				}
 			}
 
 			// Need to resolve the constructor.
+			// 是否是自动注入
+			// 	1. chosenCtors != null:determineConstructorsFromBeanPostProcessors() 找到了多个构造方法，表示当前类有多个构造方法，并且至少有一个@autowired(required=false)
+			// 	or
+			//	2. autowire_constructor:
+			//		1. <bean id="xx“ class="xxx" autowire="constructor">
+			//		2. bd.setAutowire("constructor")
 			boolean autowiring = (chosenCtors != null ||
 					mbd.getResolvedAutowireMode() == AutowireCapableBeanFactory.AUTOWIRE_CONSTRUCTOR);
 			ConstructorArgumentValues resolvedValues = null;
 
+			// 最小参数个数？
 			int minNrOfArgs;
 			if (explicitArgs != null) {
 				minNrOfArgs = explicitArgs.length;
@@ -201,12 +222,15 @@ class ConstructorResolver {
 				minNrOfArgs = resolveConstructorArguments(beanName, mbd, bw, cargs, resolvedValues);
 			}
 
+			// 构造方法排序
+			// public-> 参数个数
 			AutowireUtils.sortConstructors(candidates);
 			int minTypeDiffWeight = Integer.MAX_VALUE;
 			Set<Constructor<?>> ambiguousConstructors = null;
 			LinkedList<UnsatisfiedDependencyException> causes = null;
 
 			for (Constructor<?> candidate : candidates) {
+				// 当前构造方法参数个数
 				int parameterCount = candidate.getParameterCount();
 
 				if (constructorToUse != null && argsToUse != null && argsToUse.length > parameterCount) {
@@ -229,6 +253,7 @@ class ConstructorResolver {
 								paramNames = pnd.getParameterNames(candidate);
 							}
 						}
+						// 创建对象
 						argsHolder = createArgumentArray(beanName, mbd, resolvedValues, bw, paramTypes, paramNames,
 								getUserDeclaredConstructor(candidate), autowiring, candidates.length == 1);
 					}
