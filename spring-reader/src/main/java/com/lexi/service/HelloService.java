@@ -6,18 +6,23 @@ import org.springframework.stereotype.Component;
 @Component
 public class HelloService {
 
-	public HelloService()
-	{
+//	public HelloService()
+//	{
+//
+//	}
+//	@Autowired(required = false)
+//	public HelloService(HelloServiceByXml xml)
+//	{
+//
+//	}
+//
+//	@Autowired(required = false)
+//	public HelloService(HelloServiceByXml xml,TestFindConstractService testFindConstractService)
+//	{
+//
+//	}
 
-	}
-	@Autowired(required = false)
 	public HelloService(HelloServiceByXml xml)
-	{
-
-	}
-
-	@Autowired(required = false)
-	public HelloService(HelloServiceByXml xml,TestFindConstractService testFindConstractService)
 	{
 
 	}
