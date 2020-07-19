@@ -125,6 +125,12 @@ class ConstructorResolver {
 	public BeanWrapper autowireConstructor(String beanName, RootBeanDefinition mbd,
 			@Nullable Constructor<?>[] chosenCtors, @Nullable Object[] explicitArgs) {
 
+		/**
+		 * 几个问题
+		 * 1. 当我们通过 beanFactoryPostProcessor 设置一个参数值(参数少的构造方法)，spring是怎么选择的
+		 */
+
+
 		BeanWrapperImpl bw = new BeanWrapperImpl();
 		this.beanFactory.initBeanWrapper(bw);
 
@@ -218,8 +224,11 @@ class ConstructorResolver {
 				minNrOfArgs = explicitArgs.length;
 			}
 			else {
+				// 拿到程序员提供的构造方法的参数的值
 				ConstructorArgumentValues cargs = mbd.getConstructorArgumentValues();
+				// 实例化 resolvedValues
 				resolvedValues = new ConstructorArgumentValues();
+				// 计算最小参数个数，如果最小参数个数大于0，会将cargs存入resolvedValues
 				minNrOfArgs = resolveConstructorArguments(beanName, mbd, bw, cargs, resolvedValues);
 			}
 
@@ -232,6 +241,7 @@ class ConstructorResolver {
 			// public Test(User u){}
 			// Object 差异大，User 差异少，Spring 会选择差异小的
 			int minTypeDiffWeight = Integer.MAX_VALUE;
+
 			// 模糊不清的参数
 			// 如果构造方法差异相同，spring就会认为是模糊不清的
 			Set<Constructor<?>> ambiguousConstructors = null;
@@ -242,7 +252,9 @@ class ConstructorResolver {
 				// 当前构造方法参数个数
 				int parameterCount = candidate.getParameterCount();
 
-				// 如果找到一个合适的构造方法，退出循环
+				// constructorToUse != null && argsToUse != null 找到一个构造方法
+				// 并且上一个构造方法的参数个数比当前构造方法的参数个数长
+				// 这边默认选最长参数的构造方法
 				if (constructorToUse != null && argsToUse != null && argsToUse.length > parameterCount) {
 					// Already found greedy constructor that can be satisfied ->
 					// do not look any further, there are only less greedy constructors left.
@@ -313,6 +325,7 @@ class ConstructorResolver {
 					minTypeDiffWeight = typeDiffWeight;
 					ambiguousConstructors = null;
 				}
+				// 如果当前差异权重等于做小差异权重，那么就会添加进 ambiguousConstructors
 				else if (constructorToUse != null && typeDiffWeight == minTypeDiffWeight) {
 					if (ambiguousConstructors == null) {
 						ambiguousConstructors = new LinkedHashSet<>();
@@ -334,6 +347,7 @@ class ConstructorResolver {
 						"Could not resolve matching constructor " +
 						"(hint: specify index/type/name arguments for simple parameters to avoid type ambiguities)");
 			}
+			// 如果采用严谨模式，那么模糊不清的参数将会报错
 			else if (ambiguousConstructors != null && !mbd.isLenientConstructorResolution()) {
 				throw new BeanCreationException(mbd.getResourceDescription(), beanName,
 						"Ambiguous constructor matches found in bean '" + beanName + "' " +
@@ -341,6 +355,7 @@ class ConstructorResolver {
 						ambiguousConstructors);
 			}
 
+			// 缓存构造方法，原型使用
 			if (explicitArgs == null && argsHolderToUse != null) {
 				argsHolderToUse.storeCache(mbd, constructorToUse);
 			}
@@ -777,6 +792,7 @@ class ConstructorResolver {
 			BeanWrapper bw, Class<?>[] paramTypes, @Nullable String[] paramNames, Executable executable,
 			boolean autowiring, boolean fallback) throws UnsatisfiedDependencyException {
 
+		// 类型转换器
 		TypeConverter customConverter = this.beanFactory.getCustomTypeConverter();
 		TypeConverter converter = (customConverter != null ? customConverter : bw);
 
@@ -784,16 +800,26 @@ class ConstructorResolver {
 		Set<ConstructorArgumentValues.ValueHolder> usedValueHolders = new HashSet<>(paramTypes.length);
 		Set<String> autowiredBeanNames = new LinkedHashSet<>(4);
 
+		// 循环参数
 		for (int paramIndex = 0; paramIndex < paramTypes.length; paramIndex++) {
+			// 拿到参数类型
 			Class<?> paramType = paramTypes[paramIndex];
+			// 拿到参数名称
 			String paramName = (paramNames != null ? paramNames[paramIndex] : "");
 			// Try to find matching constructor argument value, either indexed or generic.
 			ConstructorArgumentValues.ValueHolder valueHolder = null;
 			if (resolvedValues != null) {
+				// 拿到当前参数对应的值（如果存在）
+				// 这边从bd中拿
+				// 	private final Map<Integer, ValueHolder> indexedArgumentValues = new LinkedHashMap<>();  <arg-contract index=
+				//	private final List<ValueHolder> genericArgumentValues = new ArrayList<>(); <arg...
+				// 这边是在上面minNrOfArgs = resolveConstructorArguments(beanName, mbd, bw, cargs, resolvedValues); 存进去的
 				valueHolder = resolvedValues.getArgumentValue(paramIndex, paramType, paramName, usedValueHolders);
 				// If we couldn't find a direct match and are not supposed to autowire,
 				// let's try the next generic, untyped argument value as fallback:
 				// it could match after type conversion (for example, String -> int).
+
+				// 第二次拿参数，这次是类型转换，比如传的是字符串，这边给他转换成Class
 				if (valueHolder == null && (!autowiring || paramTypes.length == resolvedValues.getArgumentCount())) {
 					valueHolder = resolvedValues.getGenericArgumentValue(null, null, usedValueHolders);
 				}
@@ -928,6 +954,7 @@ class ConstructorResolver {
 	protected Object resolveAutowiredArgument(MethodParameter param, String beanName,
 			@Nullable Set<String> autowiredBeanNames, TypeConverter typeConverter, boolean fallback) {
 
+		// 拿到参数类型
 		Class<?> paramType = param.getParameterType();
 		if (InjectionPoint.class.isAssignableFrom(paramType)) {
 			InjectionPoint injectionPoint = currentInjectionPoint.get();

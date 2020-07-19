@@ -26,6 +26,11 @@ public class HelloService {
 	{
 
 	}
+
+	public HelloService(HelloServiceByXml xml,String str)
+	{
+
+	}
 	public void sayHello()
 	{
 		System.out.println("Hello Spring");
