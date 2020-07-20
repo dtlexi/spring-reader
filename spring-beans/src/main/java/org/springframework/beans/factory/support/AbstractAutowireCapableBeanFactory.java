@@ -570,16 +570,19 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			instanceWrapper = createBeanInstance(beanName, mbd, args);
 		}
 
+		// 得到实例化出来的对象
 		final Object bean = instanceWrapper.getWrappedInstance();
+
 		Class<?> beanType = instanceWrapper.getWrappedClass();
 		if (beanType != NullBean.class) {
 			mbd.resolvedTargetType = beanType;
 		}
 
-		// 第三次调用后置处理器BeanPostProcessor,调用剩下的所有BeanPostProcessor
+		// 第三次调用后置处理器BeanPostProcessor
 		synchronized (mbd.postProcessingLock) {
 			if (!mbd.postProcessed) {
 				try {
+					//
 					applyMergedBeanDefinitionPostProcessors(mbd, beanType, beanName);
 				}
 				catch (Throwable ex) {

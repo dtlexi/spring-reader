@@ -868,6 +868,16 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
 		// Trigger initialization of all non-lazy singleton beans...
 		for (String beanName : beanNames) {
+			// 获取合并Bd
+			// why Merge?
+			// RootBeanDefinition root=new RootBeanDefinition();
+			// root.setScope("singleion");
+			// root.set...
+
+			// ChildBd cbd=new ChildBd(root);
+			// ...
+
+			// 如果不合并，怎么能拿到cbd的scope?
 			RootBeanDefinition bd = getMergedLocalBeanDefinition(beanName);
 			// 判断是否是abstract 注意这边的abstract不是指抽象类，而是指<bean id="xxx" abstract="true" />
 			// 判断是否单例
