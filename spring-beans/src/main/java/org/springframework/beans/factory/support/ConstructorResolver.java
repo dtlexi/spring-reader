@@ -127,7 +127,13 @@ class ConstructorResolver {
 
 		/**
 		 * 几个问题
-		 * 1. 当我们通过 beanFactoryPostProcessor 设置一个参数值(参数少的构造方法)，spring是怎么选择的
+		 * 1. 多个构造方法，Spring如何选取
+		 * 		1. 如果构造方法参数不同，spring参数最多的
+		 * 		2. 如果存在俩个相同参数的构造方法，并且spring都可以解析他们，那么spring根据差异权重来寻找差异小的
+		 * 		3. 如果差异权重也相同，那么spring会将他们存入ambiguousConstructors，根据配置来判断是报错还是选择第一个解析的
+		 * 2. 多个构造方法，同时通过beanFactoryPostProcessor addGenericArgumentValue，并且当前参数个数不是最多的，spring如何选取，
+		 *		spring 会
+		 * 3. 多个构造方法,其中参数最多的构造方法存在一个参数无法解析（String,int...等spring不知道怎么赋值的）
 		 */
 
 
@@ -191,9 +197,11 @@ class ConstructorResolver {
 			// 这种只有俩种情况：
 			// 	1. 表示当前类有且只有一个构造方法，并且当前构造方法有参数
 			//  2. 表示当前类有一个构造方法@Autowired(required=true)
+			//  3. autowire="constructor",并且当前只有一个构造方法
 			// explicitArgs == null && !mbd.hasConstructorArgumentValues() 表示没有指定当前构造方法的参数
 			if (candidates.length == 1 && explicitArgs == null && !mbd.hasConstructorArgumentValues()) {
 				Constructor<?> uniqueCandidate = candidates[0];
+				// 默认构造方法
 				if (uniqueCandidate.getParameterCount() == 0) {
 					synchronized (mbd.constructorArgumentLock) {
 						// 设置当前参数的构造方法
@@ -216,6 +224,8 @@ class ConstructorResolver {
 			//		2. bd.setAutowire("constructor")
 			boolean autowiring = (chosenCtors != null ||
 					mbd.getResolvedAutowireMode() == AutowireCapableBeanFactory.AUTOWIRE_CONSTRUCTOR);
+
+			// 构造方法参数
 			ConstructorArgumentValues resolvedValues = null;
 
 			// 表示实例化bean的时候选择的那个构造方法，最少要有多少参数
@@ -228,7 +238,9 @@ class ConstructorResolver {
 				ConstructorArgumentValues cargs = mbd.getConstructorArgumentValues();
 				// 实例化 resolvedValues
 				resolvedValues = new ConstructorArgumentValues();
-				// 计算最小参数个数，如果最小参数个数大于0，会将cargs存入resolvedValues
+				// 计算最小参数个数
+				// 将构造方法的参数封装resolvedValues
+				// 这边会进行第一次构造方法参数的解析，会将xml ref的参数解析出来 使用的getBean()
 				minNrOfArgs = resolveConstructorArguments(beanName, mbd, bw, cargs, resolvedValues);
 			}
 
@@ -738,11 +750,15 @@ class ConstructorResolver {
 
 		TypeConverter customConverter = this.beanFactory.getCustomTypeConverter();
 		TypeConverter converter = (customConverter != null ? customConverter : bw);
+
+		// 封装valueResolver
 		BeanDefinitionValueResolver valueResolver =
 				new BeanDefinitionValueResolver(this.beanFactory, beanName, mbd, converter);
 
+		// 最小参数个数
 		int minNrOfArgs = cargs.getArgumentCount();
 
+		// 循环遍历IndexedArguments
 		for (Map.Entry<Integer, ConstructorArgumentValues.ValueHolder> entry : cargs.getIndexedArgumentValues().entrySet()) {
 			int index = entry.getKey();
 			if (index < 0) {
@@ -753,12 +769,15 @@ class ConstructorResolver {
 				minNrOfArgs = index + 1;
 			}
 			ConstructorArgumentValues.ValueHolder valueHolder = entry.getValue();
+			// 是否已经类型转换，如果已经类型转换，那么直接添加到resolvedValues
 			if (valueHolder.isConverted()) {
 				resolvedValues.addIndexedArgumentValue(index, valueHolder);
 			}
 			else {
+				// 第一次参数类型转换，这边会转换 <constructor-arg name="helloService" ref="helloService"></constructor-arg>
 				Object resolvedValue =
 						valueResolver.resolveValueIfNecessary("constructor argument", valueHolder.getValue());
+				// 封装ValueHolder
 				ConstructorArgumentValues.ValueHolder resolvedValueHolder =
 						new ConstructorArgumentValues.ValueHolder(resolvedValue, valueHolder.getType(), valueHolder.getName());
 				resolvedValueHolder.setSource(valueHolder);
@@ -766,11 +785,13 @@ class ConstructorResolver {
 			}
 		}
 
+		// 循环遍历GenericArguments
 		for (ConstructorArgumentValues.ValueHolder valueHolder : cargs.getGenericArgumentValues()) {
 			if (valueHolder.isConverted()) {
 				resolvedValues.addGenericArgumentValue(valueHolder);
 			}
 			else {
+				// 第一次参数类型转换，这边会转换 <constructor-arg name="helloService" ref="helloService"></constructor-arg>
 				Object resolvedValue =
 						valueResolver.resolveValueIfNecessary("constructor argument", valueHolder.getValue());
 				ConstructorArgumentValues.ValueHolder resolvedValueHolder = new ConstructorArgumentValues.ValueHolder(
@@ -784,8 +805,12 @@ class ConstructorResolver {
 	}
 
 	/**
-	 * Create an array of arguments to invoke a constructor or factory method,
-	 * given the resolved constructor argument values.
+	 * 创建构造方法参数，这边有俩种情况
+	 * 	1. 通过xml，获取beanFactoryPostProcessor添加过明确的值
+	 * 	2. xml autowire="constructor" 或者 注解 @Autowired() ,并且没有指定参数值
+	 *
+	 * 	1. 第一种情况，spring 找到构造方法参数，转换成对应的
+	 *
 	 */
 	private ArgumentsHolder createArgumentArray(
 			String beanName, RootBeanDefinition mbd, @Nullable ConstructorArgumentValues resolvedValues,
@@ -796,7 +821,10 @@ class ConstructorResolver {
 		TypeConverter customConverter = this.beanFactory.getCustomTypeConverter();
 		TypeConverter converter = (customConverter != null ? customConverter : bw);
 
+		// 待返回的参数列表
 		ArgumentsHolder args = new ArgumentsHolder(paramTypes.length);
+
+		// 已经使用过的构造方法的值
 		Set<ConstructorArgumentValues.ValueHolder> usedValueHolders = new HashSet<>(paramTypes.length);
 		Set<String> autowiredBeanNames = new LinkedHashSet<>(4);
 
@@ -809,17 +837,21 @@ class ConstructorResolver {
 			// Try to find matching constructor argument value, either indexed or generic.
 			ConstructorArgumentValues.ValueHolder valueHolder = null;
 			if (resolvedValues != null) {
-				// 拿到当前参数对应的值（如果存在）
-				// 这边从bd中拿
-				// 	private final Map<Integer, ValueHolder> indexedArgumentValues = new LinkedHashMap<>();  <arg-contract index=
-				//	private final List<ValueHolder> genericArgumentValues = new ArrayList<>(); <arg...
-				// 这边是在上面minNrOfArgs = resolveConstructorArguments(beanName, mbd, bw, cargs, resolvedValues); 存进去的
+
+				// 获取当前参数对呀的值
+				// 首先获取 indexedArgumentValues 即通过index设置的<constructor-arg index="0" value="zhagnsan"></constructor-arg>
+				// 如果通过Index获取不到，那么就通过paramType,paramName来获取，<constructor-arg name="age" value="10"></constructor-arg>
+				// resolvedValues中的参数的值是在解析minArg是存储进去的
+
 				valueHolder = resolvedValues.getArgumentValue(paramIndex, paramType, paramName, usedValueHolders);
 				// If we couldn't find a direct match and are not supposed to autowire,
 				// let's try the next generic, untyped argument value as fallback:
 				// it could match after type conversion (for example, String -> int).
 
-				// 第二次拿参数，这次是类型转换，比如传的是字符串，这边给他转换成Class
+				// 第二次拿构造方法参数
+				// 如果通过index获取不到，并且通过type,name获取不到，那么此时就获取一个通用的
+				// 这个一般是通过beanFactoryPostProcessor添加进去的
+				// 此时会寻找 genericArgumentValues 队列中第一个未使用的，并且name,type为空的参数
 				if (valueHolder == null && (!autowiring || paramTypes.length == resolvedValues.getArgumentCount())) {
 					valueHolder = resolvedValues.getGenericArgumentValue(null, null, usedValueHolders);
 				}
@@ -827,9 +859,17 @@ class ConstructorResolver {
 			if (valueHolder != null) {
 				// We found a potential match - let's give it a try.
 				// Do not consider the same value definition multiple times!
+
+				// 将当前vh 添加到used，表示当前参数已经使用过了，防止重复使用
 				usedValueHolders.add(valueHolder);
+
+				// 原始参数，未转换之前的
 				Object originalValue = valueHolder.getValue();
+
+				// 转换后的值
 				Object convertedValue;
+
+
 				if (valueHolder.isConverted()) {
 					convertedValue = valueHolder.getConvertedValue();
 					args.preparedArguments[paramIndex] = convertedValue;
@@ -837,6 +877,8 @@ class ConstructorResolver {
 				else {
 					MethodParameter methodParam = MethodParameter.forExecutable(executable, paramIndex);
 					try {
+						// 第二次构造方法参数类型转换
+						// 这次将会转换成需要的类型
 						convertedValue = converter.convertIfNecessary(originalValue, paramType, methodParam);
 					}
 					catch (TypeMismatchException ex) {
@@ -867,8 +909,10 @@ class ConstructorResolver {
 							"] - did you specify the correct bean references as arguments?");
 				}
 				try {
+					// 自动注入参数
 					Object autowiredArgument = resolveAutowiredArgument(
 							methodParam, beanName, autowiredBeanNames, converter, fallback);
+
 					args.rawArguments[paramIndex] = autowiredArgument;
 					args.arguments[paramIndex] = autowiredArgument;
 					args.preparedArguments[paramIndex] = autowiredArgumentMarker;
