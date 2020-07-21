@@ -291,7 +291,11 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 
 	@Override
 	public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
+		// 调用父类构造方法，找到所有生命周期方法
 		super.postProcessMergedBeanDefinition(beanDefinition, beanType, beanName);
+		// 找到所有@Resource注解的字段和方法
+		// InjectionMetadata 注入元数据，可以简单理解为field or method的集合
+		// InjectedElement 简单理解为field or method ，内部有属性Member是Field和Method的父类
 		InjectionMetadata metadata = findResourceMetadata(beanName, beanType, null);
 		metadata.checkConfigMembers(beanDefinition);
 	}
@@ -357,12 +361,16 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 			return InjectionMetadata.EMPTY;
 		}
 
+		// 定义list
 		List<InjectionMetadata.InjectedElement> elements = new ArrayList<>();
 		Class<?> targetClass = clazz;
 
 		do {
 			final List<InjectionMetadata.InjectedElement> currElements = new ArrayList<>();
 
+			// doWithLocalFields(Class<?> clazz, FieldCallback fc)
+			// 		是循环 targetClass 类的所有注解，循环执行fc的doWith()
+			// 		fc 是 lamb 表达式
 			ReflectionUtils.doWithLocalFields(targetClass, field -> {
 				if (webServiceRefClass != null && field.isAnnotationPresent(webServiceRefClass)) {
 					if (Modifier.isStatic(field.getModifiers())) {
@@ -376,6 +384,7 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 					}
 					currElements.add(new EjbRefElement(field, field, null));
 				}
+				// 找到@Resource注解
 				else if (field.isAnnotationPresent(Resource.class)) {
 					if (Modifier.isStatic(field.getModifiers())) {
 						throw new IllegalStateException("@Resource annotation is not supported on static fields");
@@ -386,6 +395,7 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 				}
 			});
 
+			// 找到所有方法中添加了@Resource注解的方法
 			ReflectionUtils.doWithLocalMethods(targetClass, method -> {
 				Method bridgedMethod = BridgeMethodResolver.findBridgedMethod(method);
 				if (!BridgeMethodResolver.isVisibilityBridgeMethodPair(method, bridgedMethod)) {

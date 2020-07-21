@@ -3,9 +3,17 @@ package com.lexi.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
+
 @Component
 public class HelloService {
-	public HelloService(HelloServiceByXml helloServiceByXml)
+	@Autowired
+	HelloServiceByXml helloServiceByXml;
+
+	@Resource
+	HelloServiceCreateByAnnoBean helloServiceCreateByAnnoBean;
+
+	public HelloService()
 	{
 
 	}
