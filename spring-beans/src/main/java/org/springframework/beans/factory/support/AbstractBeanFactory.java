@@ -1284,6 +1284,14 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	 */
 	protected RootBeanDefinition getMergedLocalBeanDefinition(String beanName) throws BeansException {
 		// Quick check on the concurrent map first, with minimal locking.
+
+		/**
+		 * 合并BD
+		 * 这个方法第一次被调用是在执行invokeBeanFactoryPostProcessor->getBeanDefinitionType 时
+		 * 因为执行beanFactoryPostProcessor时，需要合并bd，才能拿到完整的bdf，以防止自定义的bdf不完整
+		 */
+
+		// 多次调用，存入缓存
 		RootBeanDefinition mbd = this.mergedBeanDefinitions.get(beanName);
 		if (mbd != null && !mbd.stale) {
 			return mbd;
@@ -1330,6 +1338,8 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 
 			if (mbd == null || mbd.stale) {
 				previous = mbd;
+
+				// 判断当前bd有么有parent
 				if (bd.getParentName() == null) {
 					// Use copy of given root bean definition.
 					if (bd instanceof RootBeanDefinition) {
@@ -1343,8 +1353,10 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 					// Child bean definition: needs to be merged with parent.
 					BeanDefinition pbd;
 					try {
+						// 获取parent name
 						String parentBeanName = transformedBeanName(bd.getParentName());
 						if (!beanName.equals(parentBeanName)) {
+							// 获取parent bd ,这边防止有爷爷辈，需要合并后的bd
 							pbd = getMergedBeanDefinition(parentBeanName);
 						}
 						else {
@@ -1364,7 +1376,11 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 								"Could not resolve parent bean definition '" + bd.getParentName() + "'", ex);
 					}
 					// Deep copy with overridden values.
+
+					// 以父类为基准，创建一个root bd
 					mbd = new RootBeanDefinition(pbd);
+
+					// 将子类覆盖进去
 					mbd.overrideFrom(bd);
 				}
 
