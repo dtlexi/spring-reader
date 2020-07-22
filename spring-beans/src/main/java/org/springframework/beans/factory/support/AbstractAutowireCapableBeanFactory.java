@@ -584,6 +584,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				try {
 					// 调用MergedBeanDefinitionPostProcessor的postProcessMergeBeanDefinition()
 					// 这边典型的有CommonAnnotationBeanPostProcessor和AutowiredAnnotationBeanPostProcessor
+					// CommonAnnotationBeanPostProcessor 是找到所有@Resource注解
+					// AutowiredAnnotationBeanPostProcessor 找到所有@Autowired注解
 					applyMergedBeanDefinitionPostProcessors(mbd, beanType, beanName);
 				}
 				catch (Throwable ex) {
@@ -621,6 +623,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			// 填充属性
 			// 里面会完成第五次第六次后置处理器调用
 			populateBean(beanName, mbd, instanceWrapper);
+
+
 			// 初始化Spring,不是实例化
 			// 第七次第八次后置处理器调用
 			exposedObject = initializeBean(beanName, exposedObject, mbd);
@@ -1473,9 +1477,16 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		// Give any InstantiationAwareBeanPostProcessors the opportunity to modify the
 		// state of the bean before properties are set. This can be used, for example,
 		// to support styles of field injection.
+
+		// 执行后置处理器InstantiationAwareBeanPostProcessor的postProcessAfterInstantiation方法
+		// 如果postProcessAfterInstantiation方法返回false，那么将直接退出该方法，不会执行下面的赋值操作
+		// 这边spring默认的后置处理器都是直接返回true
+		// 这边应该是spring开发给程序员使用的，
+		// 控制 autowired by type 但是有的又不想注入
 		if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
 			for (BeanPostProcessor bp : getBeanPostProcessors()) {
 				if (bp instanceof InstantiationAwareBeanPostProcessor) {
+					// 执行后置处理器的 postProcessAfterInstantiation
 					InstantiationAwareBeanPostProcessor ibp = (InstantiationAwareBeanPostProcessor) bp;
 					if (!ibp.postProcessAfterInstantiation(bw.getWrappedInstance(), beanName)) {
 						return;
@@ -1483,6 +1494,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				}
 			}
 		}
+
+		// 获取程序员手动提供的值
+		// bd.getPropertyValues().addPropertyValue("name",value);
 
 		PropertyValues pvs = (mbd.hasPropertyValues() ? mbd.getPropertyValues() : null);
 
