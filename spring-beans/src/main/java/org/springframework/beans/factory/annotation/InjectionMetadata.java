@@ -120,13 +120,18 @@ public class InjectionMetadata {
 
 	public void inject(Object target, @Nullable String beanName, @Nullable PropertyValues pvs) throws Throwable {
 		Collection<InjectedElement> checkedElements = this.checkedElements;
+		// 需要注入的元素
 		Collection<InjectedElement> elementsToIterate =
 				(checkedElements != null ? checkedElements : this.injectedElements);
 		if (!elementsToIterate.isEmpty()) {
+			// 遍历元素，完成注入
 			for (InjectedElement element : elementsToIterate) {
 				if (logger.isTraceEnabled()) {
 					logger.trace("Processing injected element of bean '" + beanName + "': " + element);
 				}
+				// 属性注入
+				// 这个方法有俩个重写，分别是AutowiredFieldElement和AutowiredFieldElement，
+				// 分别为方法和属性完成注入
 				element.inject(target, beanName, pvs);
 			}
 		}
@@ -177,8 +182,11 @@ public class InjectionMetadata {
 	 */
 	public abstract static class InjectedElement {
 
+		// Field和Method的父类
+		// 可以简单的理解为属性和方法
 		protected final Member member;
 
+		// 是否是属性
 		protected final boolean isField;
 
 		@Nullable
