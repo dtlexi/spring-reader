@@ -4,14 +4,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 @Component
 public class HelloService {
 	@Autowired
-	HelloServiceByXml helloServiceByXml;
+	List<IHelloServiceAutowired> helloServiceAutowired;
 
-	@Resource
-	HelloServiceCreateByAnnoBean helloServiceCreateByAnnoBean;
+//	@Resource
+//	HelloServiceCreateByAnnoBean helloServiceCreateByAnnoBean;
 
 	public HelloService()
 	{

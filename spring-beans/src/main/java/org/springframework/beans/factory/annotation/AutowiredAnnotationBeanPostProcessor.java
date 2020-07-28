@@ -698,12 +698,25 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 				value = resolvedCachedArgument(beanName, this.cachedFieldValue);
 			}
 			else {
+				// 依赖描述
+				// 包含依赖注入类，字段名称，是否强制注入等字段
+				// public DependencyDescriptor(Field field, boolean required, boolean eager) {
+				//		this.declaringClass = field.getDeclaringClass();
+				//		this.fieldName = field.getName();
+				//		this.required = required;
+				//		this.eager = eager;
+				//	}
 				DependencyDescriptor desc = new DependencyDescriptor(field, this.required);
+				// 设置需要`被`注入的类
 				desc.setContainingClass(bean.getClass());
+				// 找到满足条件的注入对象的beanName
 				Set<String> autowiredBeanNames = new LinkedHashSet<>(1);
 				Assert.state(beanFactory != null, "No BeanFactory available");
 				TypeConverter typeConverter = beanFactory.getTypeConverter();
 				try {
+					// 这边是拿到对应的需要注入的值
+					// 内部调用的getBean
+					// 实例化依赖注入的对象
 					value = beanFactory.resolveDependency(desc, beanName, autowiredBeanNames, typeConverter);
 				}
 				catch (BeansException ex) {
@@ -712,8 +725,10 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 				synchronized (this) {
 					if (!this.cached) {
 						if (value != null || this.required) {
+							// 缓存
 							this.cachedFieldValue = desc;
 							registerDependentBeans(beanName, autowiredBeanNames);
+
 							if (autowiredBeanNames.size() == 1) {
 								String autowiredBeanName = autowiredBeanNames.iterator().next();
 								if (beanFactory.containsBean(autowiredBeanName) &&
@@ -732,6 +747,7 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 			}
 			if (value != null) {
 				ReflectionUtils.makeAccessible(field);
+				// 属性设置
 				field.set(bean, value);
 			}
 		}
