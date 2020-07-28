@@ -1253,6 +1253,8 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			return new Jsr330Factory().createDependencyProvider(descriptor, requestingBeanName);
 		}
 		else {
+			// 处理Lazy
+			// 使用的代理
 			Object result = getAutowireCandidateResolver().getLazyResolutionProxyIfNecessary(
 					descriptor, requestingBeanName);
 			if (result == null) {
@@ -1438,12 +1440,17 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			// 根据类型获取对应的Bean
 			Map<String, Object> matchingBeans = findAutowireCandidates(beanName, elementType,
 					new MultiElementDescriptor(descriptor));
+
 			if (matchingBeans.isEmpty()) {
 				return null;
 			}
+
+			// 不知道这一步是干什么的
 			if (autowiredBeanNames != null) {
 				autowiredBeanNames.addAll(matchingBeans.keySet());
 			}
+
+			// 将结果集转换成对应的Collection
 			TypeConverter converter = (typeConverter != null ? typeConverter : getTypeConverter());
 			Object result = converter.convertIfNecessary(matchingBeans.values(), type);
 			if (result instanceof List) {
