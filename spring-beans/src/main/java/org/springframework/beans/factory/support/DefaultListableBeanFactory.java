@@ -1255,6 +1255,10 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		else {
 			// 处理Lazy
 			// 使用的代理
+			// 这边不是处理的在类上加的注解，而是在属性上加@Lazy
+			// 	@Autowired
+			//	@Lazy
+			//	HelloServiceAutowiredLazy helloServiceAutowiredLazy;
 			Object result = getAutowireCandidateResolver().getLazyResolutionProxyIfNecessary(
 					descriptor, requestingBeanName);
 			if (result == null) {
@@ -1271,6 +1275,11 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
 		InjectionPoint previousInjectionPoint = ConstructorResolver.setCurrentInjectionPoint(descriptor);
 		try {
+			// 捷径
+			// 这边descriptor有俩种情况：
+			// 	1. 直接是DependencyDescriptor，那么这边会直接返回null
+			//	2. 一种是ShortcutDependencyDescriptor，这边会返回getBean()。
+			// 注释详见：AutowiredAnnotationBeanPostProcessor.AutowiredFieldElement.inject------if (this.cached)处
 			Object shortcut = descriptor.resolveShortcut(this);
 			if (shortcut != null) {
 				return shortcut;
@@ -1538,7 +1547,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	protected Map<String, Object> findAutowireCandidates(
 			@Nullable String beanName, Class<?> requiredType, DependencyDescriptor descriptor) {
 
-		// 根据类型找到（实现/继承/当前类）的name集合
+		// 根据类型找到当前类或者当前类子类的名字的集合
 		String[] candidateNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(
 				this, requiredType, true, descriptor.isEager());
 
@@ -1565,7 +1574,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			if (!isSelfReference(beanName, candidate) && isAutowireCandidate(candidate, descriptor)) {
 				// 如果singleObjects存在当前对像，那么将当前对象添加到result中
 				// 否则返回当前对象对呀的Class
-				// 为什么不直接创建并且返回对象？
+				// 为什么不直接创建并且返回对象
 				addCandidateEntry(result, candidate, descriptor, requiredType);
 			}
 		}

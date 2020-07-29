@@ -119,8 +119,11 @@ public class InjectionMetadata {
 	}
 
 	public void inject(Object target, @Nullable String beanName, @Nullable PropertyValues pvs) throws Throwable {
+
+		// checkedElements 是之前找到的所有的@Autowired的注解的属性，方法..
 		Collection<InjectedElement> checkedElements = this.checkedElements;
 		// 需要注入的元素
+
 		Collection<InjectedElement> elementsToIterate =
 				(checkedElements != null ? checkedElements : this.injectedElements);
 		if (!elementsToIterate.isEmpty()) {

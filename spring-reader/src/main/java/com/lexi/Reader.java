@@ -14,6 +14,9 @@ public class Reader {
 //		System.out.println(context.getBean("helloServiceFactoryBean"));
 //		System.out.println(context.getBean("&helloServiceFactoryBean"));
 
-		context.getBean(HelloServiceByXml.class);
+		HelloService helloService1= context.getBean(HelloService.class);
+
+		HelloService helloService2= context.getBean(HelloService.class);
+		helloService1.test();
 	}
 }

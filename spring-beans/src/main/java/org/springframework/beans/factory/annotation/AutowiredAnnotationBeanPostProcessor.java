@@ -694,6 +694,18 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 			// Field继承自member
 			Field field = (Field) this.member;
 			Object value;
+
+			// Cached默认情况下为false
+			// 当前属性赋值完后，会将其改为true
+			// 所以大部分情况下，cached为false
+			// 只有当bean scope为prototype时，第二次调用此方法给属性赋值时，cached为true
+
+			// this.cachedFieldValue 大部分情况下为DependencyDescriptor对象
+			// 只有当第一次赋值时，如果只找到一个符合条件的bean，会将this.cachedFieldValue赋值为ShortcutDependencyDescriptor
+			// ShortcutDependencyDescriptor是resolveShortcut(this)方法会直接返回getBean,会加快赋值速度（详细代码体现：DefaultListableBeanFactory.doResolveDependency Object shortcut = descriptor.resolveShortcut(this);）
+			// 而DependencyDescriptor resolveShortcut(this) 直接返回null
+			// 那么这边为什么不直接使用map缓存属性名称和属性值呢？这样更快
+			// 因为赋值的属性有可能是prototype的
 			if (this.cached) {
 				value = resolvedCachedArgument(beanName, this.cachedFieldValue);
 			}
@@ -729,6 +741,9 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 							this.cachedFieldValue = desc;
 							registerDependentBeans(beanName, autowiredBeanNames);
 
+							// 当前只找到一个满足条件的注入bean时
+							// this.cachedFieldValue 赋值为ShortcutDependencyDescriptor
+							// ShortcutDependencyDescriptor会直接调用getBean，加快赋值速度
 							if (autowiredBeanNames.size() == 1) {
 								String autowiredBeanName = autowiredBeanNames.iterator().next();
 								if (beanFactory.containsBean(autowiredBeanName) &&
