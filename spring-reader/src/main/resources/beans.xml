@@ -5,6 +5,7 @@
 	   http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 	<bean id="helloServiceByXml" class="com.lexi.service.HelloServiceByXml">
+
 	</bean>
 	<alias name="helloServiceByXml" alias="helloServiceByXml2"></alias>
 </beans>

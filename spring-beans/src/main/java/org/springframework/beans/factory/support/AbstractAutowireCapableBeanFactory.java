@@ -1550,6 +1550,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		if (pvs != null) {
+			// <property name=""
+			// @value
 			applyPropertyValues(beanName, mbd, bw, pvs);
 		}
 	}
