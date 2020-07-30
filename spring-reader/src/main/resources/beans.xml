@@ -4,8 +4,7 @@
 	   xsi:schemaLocation="http://www.springframework.org/schema/beans
 	   http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-	<bean id="helloServiceByXml" class="com.lexi.service.HelloServiceByXml">
+	<bean id="helloServiceByXml" class="com.lexi.service.HelloServiceByXml" autowire="byType">
 
 	</bean>
-	<alias name="helloServiceByXml" alias="helloServiceByXml2"></alias>
 </beans>

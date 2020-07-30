@@ -1497,7 +1497,6 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		// 获取程序员手动提供的值
 		// bd.getPropertyValues().addPropertyValue("name",value);
-
 		PropertyValues pvs = (mbd.hasPropertyValues() ? mbd.getPropertyValues() : null);
 
 		int resolvedAutowireMode = mbd.getResolvedAutowireMode();
@@ -1509,6 +1508,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			}
 			// Add property values based on autowire by type if applicable.
 			if (resolvedAutowireMode == AUTOWIRE_BY_TYPE) {
+				// 找出所有属性(set方法),并且getBean()对应的值
+				// 这边没有赋值
 				autowireByType(beanName, mbd, bw, newPvs);
 			}
 			pvs = newPvs;
@@ -1550,8 +1551,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		if (pvs != null) {
-			// <property name=""
-			// @value
+			// 主要处理如下几种情况：
+			// 	1、 <property name="helloServiceByXml" ref="helloServiceByXml"></property>
+			// 	2、 bd.addPropertyValues();
+			// 	3、 调用前面找到的set方法
 			applyPropertyValues(beanName, mbd, bw, pvs);
 		}
 	}
@@ -1608,17 +1611,22 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		Set<String> autowiredBeanNames = new LinkedHashSet<>(4);
+
+		// 那个类中所有的属性（set打头的方法）
 		String[] propertyNames = unsatisfiedNonSimpleProperties(mbd, bw);
 		for (String propertyName : propertyNames) {
 			try {
+				// 拿到PropertyDescriptor
 				PropertyDescriptor pd = bw.getPropertyDescriptor(propertyName);
 				// Don't try autowiring by type for type Object: never makes sense,
 				// even if it technically is a unsatisfied, non-simple property.
 				if (Object.class != pd.getPropertyType()) {
+					// 参数
 					MethodParameter methodParam = BeanUtils.getWriteMethodParameter(pd);
 					// Do not allow eager init for type matching in case of a prioritized post-processor.
 					boolean eager = !(bw.getWrappedInstance() instanceof PriorityOrdered);
 					DependencyDescriptor desc = new AutowireByTypeDependencyDescriptor(methodParam, eager);
+					// getBean() 属性对呀的参数
 					Object autowiredArgument = resolveDependency(desc, beanName, autowiredBeanNames, converter);
 					if (autowiredArgument != null) {
 						pvs.add(propertyName, autowiredArgument);
@@ -1650,10 +1658,15 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 * @see org.springframework.beans.BeanUtils#isSimpleProperty
 	 */
 	protected String[] unsatisfiedNonSimpleProperties(AbstractBeanDefinition mbd, BeanWrapper bw) {
+		// 返回的结果
 		Set<String> result = new TreeSet<>();
+		// 程序员自己提供的值 bd.addPropertyValues
 		PropertyValues pvs = mbd.getPropertyValues();
+		// 获取所有的属性，这边返回的是属性描述器
+		// 这边是通过BeanInfo来获取的，是属于JDK知识
 		PropertyDescriptor[] pds = bw.getPropertyDescriptors();
 		for (PropertyDescriptor pd : pds) {
+			// pd.getWriteMethod() ---判断当前属性有没有set方法
 			if (pd.getWriteMethod() != null && !isExcludedFromDependencyCheck(pd) && !pvs.contains(pd.getName()) &&
 					!BeanUtils.isSimpleProperty(pd.getPropertyType())) {
 				result.add(pd.getName());
