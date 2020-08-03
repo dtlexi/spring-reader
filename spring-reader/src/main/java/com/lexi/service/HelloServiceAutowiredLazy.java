@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 public class HelloServiceAutowiredLazy {
 	public HelloServiceAutowiredLazy()
 	{
-		System.out.println("1231123123");
+
 	}
 
 	public void say()

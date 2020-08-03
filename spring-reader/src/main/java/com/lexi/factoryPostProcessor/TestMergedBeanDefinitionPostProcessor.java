@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 public class TestMergedBeanDefinitionPostProcessor implements MergedBeanDefinitionPostProcessor {
 	@Override
 	public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
-		System.out.println(beanName);
+		//System.out.println(beanName);
 	}
 
 	@Override

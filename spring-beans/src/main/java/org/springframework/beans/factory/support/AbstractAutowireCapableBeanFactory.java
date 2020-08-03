@@ -508,8 +508,11 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		try {
 			// Give BeanPostProcessors a chance to return a proxy instead of the target bean instance.
-			// 这边第一次调用了后置处理器
-			// 这边处理的TargetSource,
+
+			// 第一次调用spring后置处理器
+			// InstantiationAwareBeanPostProcessor postProcessBeforeInstantiation
+			// 此时spring还没有开始实例化对象
+			// 程序员可以接管spring的创建对象流程，返回自定义对象（spring建议返回代理对象）
 			Object bean = resolveBeforeInstantiation(beanName, mbdToUse);
 			if (bean != null) {
 				return bean;
@@ -563,6 +566,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			instanceWrapper = this.factoryBeanInstanceCache.remove(beanName);
 		}
 		if (instanceWrapper == null) {
+			// 这个方法内部第二次调用后置处理器
+
 			// 实例化对象
 			// 这边主要完成了俩件事
 			// 		1. 推断构造方法
@@ -1173,8 +1178,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				//获取当前bd对应的Class
 				Class<?> targetType = determineTargetType(beanName, mbd);
 				if (targetType != null) {
+					// 调用InstantiationAwareBeanPostProcessor postProcessBeforeInstantiation方法
 					bean = applyBeanPostProcessorsBeforeInstantiation(targetType, beanName);
 					if (bean != null) {
+						// 调用BeanPostProcessor的postProcessAfterInitialization方法
 						bean = applyBeanPostProcessorsAfterInitialization(bean, beanName);
 					}
 				}
@@ -1235,7 +1242,6 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		 * 用法和@Bean类似，这边是自己new对象
 		 * FactoryPostProcessor 获取 bd
 		 * bd setSupplier
-		 *
 		 */
 		Supplier<?> instanceSupplier = mbd.getInstanceSupplier();
 		if (instanceSupplier != null) {
@@ -1287,7 +1293,12 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		// Candidate constructors for autowiring?
 
 		// 第二次执行执行后置处理器BeanPostProcessor
+		// 用来确定构造方法，主要逻辑如下
+		// 1. 这边的逻辑是如果存在@Autowired(required=true)的构造方法。直接返回当前构造方法
+		// 2. 如果不存在required=true的构造方法，但是存在required=false的构造方法，返回默认构造方法和@Autowired(required=false)的构造方法
+		// 3. 如果有且只存在一个构造方法，并且当前构造方法的参数>0 那么返回当前构造方法
 		Constructor<?>[] ctors = determineConstructorsFromBeanPostProcessors(beanClass, beanName);
+
 		// ctors != null
 		// AUTOWIRE_CONSTRUCTOR
 		// mbd.hasConstructorArgumentValues() 这个可以看看@MapperScan 设置MapperFactoryBean的构造参数
@@ -1375,6 +1386,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	protected Constructor<?>[] determineConstructorsFromBeanPostProcessors(@Nullable Class<?> beanClass, String beanName)
 			throws BeansException {
 
+		// 调用SmartInstantiationAwareBeanPostProcessor determineCandidateConstructors
+		// 推断构造方法
 		if (beanClass != null && hasInstantiationAwareBeanPostProcessors()) {
 			for (BeanPostProcessor bp : getBeanPostProcessors()) {
 				if (bp instanceof SmartInstantiationAwareBeanPostProcessor) {

@@ -20,18 +20,16 @@ public class HelloService {
 //	@Resource
 //	HelloServiceCreateByAnnoBean helloServiceCreateByAnnoBean;
 
-	public HelloService()
-	{
-
-	}
 
 	public void sayHello()
 	{
-		System.out.println("Hello Spring");
+//		System.out.println("Hello Spring");
+		System.out.println(this.helloServiceAutowired);
+		System.out.println(this.helloServiceAutowiredLazy);
 	}
 
-	public void test()
-	{
-		this.helloServiceAutowiredLazy.say();
-	}
+//	public void test()
+//	{
+//		this.helloServiceAutowiredLazy.say();
+//	}
 }
