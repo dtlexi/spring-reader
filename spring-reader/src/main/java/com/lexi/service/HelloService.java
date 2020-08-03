@@ -6,11 +6,11 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.List;
 
 @Component
-@Scope(BeanDefinition.SCOPE_PROTOTYPE)
 public class HelloService {
 	@Autowired
 	List<IHelloServiceAutowired> helloServiceAutowired;

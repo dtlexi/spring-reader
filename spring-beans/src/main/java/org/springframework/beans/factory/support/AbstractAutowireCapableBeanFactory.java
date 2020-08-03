@@ -1909,11 +1909,16 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		// 执行postProcessBeforeInitialization
+		// ApplicationContextAwareProcessor在这边处理各种Aware
+		// InitDestroyAnnotationBeanPostProcessor 在这边处理@PostConstruct注解
 		Object wrappedBean = bean;
 		if (mbd == null || !mbd.isSynthetic()) {
 			wrappedBean = applyBeanPostProcessorsBeforeInitialization(wrappedBean, beanName);
 		}
 
+		// 执行生命周期回调方法
+		// 1. InitializingBean afterPropertiesSet
+		// 2. xml init-method
 		try {
 			invokeInitMethods(beanName, wrappedBean, mbd);
 		}
@@ -1922,6 +1927,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 					(mbd != null ? mbd.getResourceDescription() : null),
 					beanName, "Invocation of init method failed", ex);
 		}
+
+		// 执行postProcessAfterInitialization
+		// spring aop就是在这边添加代理的
 		if (mbd == null || !mbd.isSynthetic()) {
 			wrappedBean = applyBeanPostProcessorsAfterInitialization(wrappedBean, beanName);
 		}
@@ -1961,6 +1969,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	protected void invokeInitMethods(String beanName, final Object bean, @Nullable RootBeanDefinition mbd)
 			throws Throwable {
 
+		// 判断当前bean有没有继承自InitializingBean
+		// 如果当前bean继承自InitializingBean，那么调用afterPropertiesSet方法
 		boolean isInitializingBean = (bean instanceof InitializingBean);
 		if (isInitializingBean && (mbd == null || !mbd.isExternallyManagedInitMethod("afterPropertiesSet"))) {
 			if (logger.isTraceEnabled()) {
@@ -1982,6 +1992,11 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			}
 		}
 
+		// 判断当前程序员有没有提供initMethod，
+		// 如果提供了init-method，调用当前方法
+		// 大体思路是：
+		// 	根据class和methodName，找到对应的Method
+		//	method.invoke()
 		if (mbd != null && bean.getClass() != NullBean.class) {
 			String initMethodName = mbd.getInitMethodName();
 			if (StringUtils.hasLength(initMethodName) &&
