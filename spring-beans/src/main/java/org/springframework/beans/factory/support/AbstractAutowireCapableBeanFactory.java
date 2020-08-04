@@ -1494,12 +1494,14 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		// 执行后置处理器InstantiationAwareBeanPostProcessor的postProcessAfterInstantiation方法
 		// 如果postProcessAfterInstantiation方法返回false，那么将直接退出该方法，不会执行下面的赋值操作
 		// 这边spring默认的后置处理器都是直接返回true
-		// 这边应该是spring开发给程序员使用的，
-		// 控制 autowired by type 但是有的又不想注入
+		// 这边应该是spring开发给程序员使用的，主要目的有俩个。
+		// 1. 程序员可以取消某些bean的属性赋值
+		// 2. 程序员可以手动给某些bean的属性赋值
 		if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
 			for (BeanPostProcessor bp : getBeanPostProcessors()) {
 				if (bp instanceof InstantiationAwareBeanPostProcessor) {
 					// 执行后置处理器的 postProcessAfterInstantiation
+					// 这是spring第五次调用后置处理器
 					InstantiationAwareBeanPostProcessor ibp = (InstantiationAwareBeanPostProcessor) bp;
 					if (!ibp.postProcessAfterInstantiation(bw.getWrappedInstance(), beanName)) {
 						return;
@@ -1536,17 +1538,20 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			if (pvs == null) {
 				pvs = mbd.getPropertyValues();
 			}
+			// spring第六次调用后置处理器
 			// 调用 InstantiationAwareBeanPostProcessor postProcessProperties 完成属性注入
 			// 其中@CommonAnnotationBeanPostProcessor 完成@Resource属性注入
 			// @AutowiredAnnotationBeanPostProcessor 完成@Autowired属性注入
 			for (BeanPostProcessor bp : getBeanPostProcessors()) {
 				if (bp instanceof InstantiationAwareBeanPostProcessor) {
 					InstantiationAwareBeanPostProcessor ibp = (InstantiationAwareBeanPostProcessor) bp;
+					// 执行postProcessProperties
 					PropertyValues pvsToUse = ibp.postProcessProperties(pvs, bw.getWrappedInstance(), beanName);
 					if (pvsToUse == null) {
 						if (filteredPds == null) {
 							filteredPds = filterPropertyDescriptorsForDependencyCheck(bw, mbd.allowCaching);
 						}
+						// 执行postProcessPropertyValues，但是Spring已经废弃了此方法
 						pvsToUse = ibp.postProcessPropertyValues(pvs, filteredPds, bw.getWrappedInstance(), beanName);
 						if (pvsToUse == null) {
 							return;
@@ -1921,8 +1926,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			invokeAwareMethods(beanName, bean);
 		}
 
+		// 第七次后置处理器的调用
 		// 执行postProcessBeforeInitialization
-		// ApplicationContextAwareProcessor在这边处理各种Aware
+		// ApplicationContextAwareProcessor 在这边处理各种Aware
 		// InitDestroyAnnotationBeanPostProcessor 在这边处理@PostConstruct注解
 		Object wrappedBean = bean;
 		if (mbd == null || !mbd.isSynthetic()) {
@@ -1941,6 +1947,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 					beanName, "Invocation of init method failed", ex);
 		}
 
+		// 第八次后置处理器的调用
 		// 执行postProcessAfterInitialization
 		// spring aop就是在这边添加代理的
 		if (mbd == null || !mbd.isSynthetic()) {
