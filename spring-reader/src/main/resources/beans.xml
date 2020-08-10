@@ -5,6 +5,6 @@
 	   http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 	<bean id="helloServiceByXml" class="com.lexi.service.HelloServiceByXml" autowire="byType">
-
+		<lookup-method name="getHelloServiceAutowired2"></lookup-method>
 	</bean>
 </beans>

@@ -1,6 +1,7 @@
 package com.lexi.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Lookup;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
@@ -20,6 +21,10 @@ public class HelloService {
 //	@Resource
 //	HelloServiceCreateByAnnoBean helloServiceCreateByAnnoBean;
 
+	@Lookup
+	public HelloServiceAutowired2 getHelloServiceAutowired2(){
+		return null;
+	};
 
 	public void sayHello()
 	{

@@ -8,6 +8,11 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 public class HelloServiceByXml {
+
+	public HelloServiceAutowired2 getHelloServiceAutowired2()
+	{
+		return  null;
+	}
 //	@PostConstruct
 //	public void initByAnno()
 //	{
