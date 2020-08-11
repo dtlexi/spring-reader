@@ -21,6 +21,8 @@ public class Reader {
 
 		System.out.println(helloService1.getHelloServiceAutowired2());
 
+		System.out.println(helloService1);
+
 		HelloServiceByXml helloService2= context.getBean(HelloServiceByXml.class);
 		System.out.println(helloService2.getHelloServiceAutowired2());
 	}

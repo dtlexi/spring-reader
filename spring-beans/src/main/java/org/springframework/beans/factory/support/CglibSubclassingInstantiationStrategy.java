@@ -143,13 +143,24 @@ public class CglibSubclassingInstantiationStrategy extends SimpleInstantiationSt
 		 */
 		private Class<?> createEnhancedSubclass(RootBeanDefinition beanDefinition) {
 			Enhancer enhancer = new Enhancer();
+			// 设置父类
 			enhancer.setSuperclass(beanDefinition.getBeanClass());
+			// 设置代理命名规则
 			enhancer.setNamingPolicy(SpringNamingPolicy.INSTANCE);
 			if (this.owner instanceof ConfigurableBeanFactory) {
 				ClassLoader cl = ((ConfigurableBeanFactory) this.owner).getBeanClassLoader();
 				enhancer.setStrategy(new ClassLoaderAwareGeneratorStrategy(cl));
 			}
+			// 设置 MethodOverrideCallbackFilter
+			// 如果是lookup-method，调用第2个callback ,即LookupOverrideMethodInterceptor
+			// 如果是replace-method，调用第三个callback，即ReplaceOverrideMethodInterceptor
+			// 其他调用第1个callback，即NoOp
 			enhancer.setCallbackFilter(new MethodOverrideCallbackFilter(beanDefinition));
+
+			// 设置callback
+			// NoOp
+			// LookupOverrideMethodInterceptor
+			// ReplaceOverrideMethodInterceptor
 			enhancer.setCallbackTypes(CALLBACK_TYPES);
 			return enhancer.createClass();
 		}
@@ -206,9 +217,11 @@ public class CglibSubclassingInstantiationStrategy extends SimpleInstantiationSt
 			if (methodOverride == null) {
 				return PASSTHROUGH;
 			}
+			// 如果是Lookup，那么调用地1个calll back
 			else if (methodOverride instanceof LookupOverride) {
 				return LOOKUP_OVERRIDE;
 			}
+			// 如果是Replace，那么调用地2个calll back
 			else if (methodOverride instanceof ReplaceOverride) {
 				return METHOD_REPLACER;
 			}
