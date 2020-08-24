@@ -10,21 +10,10 @@ import org.springframework.stereotype.Component;
 public class Reader {
 	public static void main(String[] args) throws Exception {
 		ApplicationContext context=new AnnotationConfigApplicationContext(SpringConfig.class);
-//		System.out.println(context.getBean("helloServiceFactoryBean"));
-//		System.out.println(context.getBean("helloServiceFactoryBean"));
-//		System.out.println(context.getBean("helloServiceFactoryBean"));
-//		System.out.println(context.getBean("helloServiceFactoryBean"));
-//		System.out.println(context.getBean("&helloServiceFactoryBean"));
+		HelloService helloService=context.getBean(HelloService.class);
 
-		HelloServiceByXml helloService1= context.getBean(HelloServiceByXml.class);
-//		helloService1.sayHello();
 
-		System.out.println(helloService1.getHelloServiceAutowired2());
-
-		System.out.println(helloService1);
-
-		HelloServiceByXml helloService2= context.getBean(HelloServiceByXml.class);
-		System.out.println(helloService2.getHelloServiceAutowired2());
+		System.out.println(helloService);
 	}
 }
 

@@ -21,10 +21,10 @@ public class HelloService {
 //	@Resource
 //	HelloServiceCreateByAnnoBean helloServiceCreateByAnnoBean;
 
-	@Lookup
-	public HelloServiceAutowired2 getHelloServiceAutowired2(){
-		return null;
-	};
+//	@Lookup
+//	public HelloServiceAutowired2 getHelloServiceAutowired2(){
+//		return null;
+//	};
 
 	public void sayHello()
 	{

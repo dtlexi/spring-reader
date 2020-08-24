@@ -499,6 +499,14 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		// Prepare method overrides.
 		// 处理 lookup-method 和 replace-method 配置，Spring 将这两个配置统称为 override method
+		// <bean id="testLookUpService" class="com.lexi.service.TestLookUpService">
+		//		<lookup-method name="getHelloService"></lookup-method>
+		// </bean>
+		// 如上：
+		// 这边只是检查name为getHelloService的方法的数量，如果当前方法数量为1，表示当前lookup方法只有一个，没有重载。
+		// 此时会设置当前overloaded为false。表示当前没有重载，方便后面处理
+		// 注意：这边只处理xml中的'<lookup-method name="getHelloService"></lookup-method>'
+		// 不会处理@Method注解，其实这也好理解，只有xml中才有可能出现重载，而@Lookup注解直接添加在方法上面，不会有这个问题
 		try {
 			mbdToUse.prepareMethodOverrides();
 		}
@@ -607,7 +615,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 
 		// this.allowCircularReferences是否允许循环依赖，可以通过setAllowCircularReferences()设置
-		// 这边主要是检查当前是否是单例对象，是否允许循环依赖
+		// 是否单利&&是否支持循环依赖&&是否正在创建中
 		boolean earlySingletonExposure = (mbd.isSingleton() && this.allowCircularReferences &&
 				isSingletonCurrentlyInCreation(beanName));
 		if (earlySingletonExposure) {
@@ -646,11 +654,34 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		if (earlySingletonExposure) {
+			// 这边分为俩种情况
+			// 1. 非循环引用
+			//	  此时是创建对象后的第一次调用getSingleton.
+			//	  此时singleObjects==null  earlySingletonObjects==null  singletonFactories != null
+			//	  但是此时allowEarlyReference == false ，所以此时不会get singletonFactories
+			// 	  此时返回null
+			// 2. 循环引用
+			//    此时已经在populateBean属性赋值时调用过getSingleton，并且当时allowEarlyReference==true
+			//    所以populateBean中会调用singletonFactories，并且添加到earlySingletonObjects，此时earlySingletonObjects不为空
+			//    此时返回不为空
+
 			Object earlySingletonReference = getSingleton(beanName, false);
 			if (earlySingletonReference != null) {
+				// bean 是通过反射创建出来的对象
+				// exposedObject 是调用 postProcessAfterInitialization 返回的对象
+				// 在aop情况下
+				// 1. 非循环引用
+				//		exposedObject 是代理对象
+				// 		bean 原始对象
+				// 2. 循环引用
+				//		因为之前调用了getSingleton 的 singletonFactory 即 getEarlyBeanReference
+				//		getEarlyBeanReference 方法中 earlyProxyReferences.put
+				// 		postProcessAfterInitialization 方法中不会在创建
+				// 		此时exposedObject== bean
 				if (exposedObject == bean) {
 					exposedObject = earlySingletonReference;
 				}
+				// 下面方法看不懂
 				else if (!this.allowRawInjectionDespiteWrapping && hasDependentBean(beanName)) {
 					String[] dependentBeans = getDependentBeans(beanName);
 					Set<String> actualDependentBeans = new LinkedHashSet<>(dependentBeans.length);
