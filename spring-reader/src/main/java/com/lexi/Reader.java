@@ -12,6 +12,7 @@ public class Reader {
 		ApplicationContext context=new AnnotationConfigApplicationContext(SpringConfig.class);
 		HelloService helloService=context.getBean(HelloService.class);
 
+		System.out.println(context.getBean(HelloServiceCreateByAnnoBean.class));
 
 		System.out.println(helloService);
 	}
