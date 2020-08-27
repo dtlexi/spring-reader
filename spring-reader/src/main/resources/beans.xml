@@ -4,11 +4,17 @@
 	   xsi:schemaLocation="http://www.springframework.org/schema/beans
 	   http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-	<bean id="helloServiceByXml" class="com.lexi.service.HelloServiceByXml" autowire="byType">
+	<bean id="helloServiceByXml" class="com.lexi.service.xml.HelloServiceByXml" autowire="byType">
 		<lookup-method name="getHelloServiceAutowired2"></lookup-method>
 	</bean>
 
 	<bean id="testLookUpService" class="com.lexi.service.TestLookUpService">
 		<lookup-method name="getHelloService"></lookup-method>
 	</bean>
+
+	<bean id="helloServiceFactory" class="com.lexi.service.xml.HelloServiceFactory"></bean>
+
+	<bean id="helloServiceCreateByFactory" factory-bean="helloServiceFactory" factory-method="createHelloServiceCreateByFactory"></bean>
+
+	<bean id="helloServiceCreateByStaticFactory" class="com.lexi.service.xml.HelloServiceStaticFactory" factory-method="createHelloServiceCreateByStaticFactory"></bean>
 </beans>

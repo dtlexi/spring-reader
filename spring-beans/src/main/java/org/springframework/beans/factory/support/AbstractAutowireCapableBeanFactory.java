@@ -1262,7 +1262,6 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 * @see #instantiateBean
 	 */
 	protected BeanWrapper createBeanInstance(String beanName, RootBeanDefinition mbd, @Nullable Object[] args) {
-		// Make sure bean class is actually resolved at this point.
 		// 拿到bean对应的class
 		Class<?> beanClass = resolveBeanClass(mbd, beanName);
 
@@ -1272,40 +1271,64 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		/**
-		 * 用法和@Bean类似，这边是自己new对象
-		 * FactoryPostProcessor 获取 bd
-		 * bd setSupplier
+		 * 处理Supplier
+		 * 这种方式使用的不多，目前我知道的只有在BeanDefinitionRegistryPostProcessor注册bd
+		 *
+		 * public class TestBeanDefinitionReg implements BeanDefinitionRegistryPostProcessor {
+		 *        @Override
+		 *    public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
+		 * 		RootBeanDefinition rbd=new RootBeanDefinition();
+		 * 		rbd.setInstanceSupplier(()->{
+		 * 			return  new HelloServiceBySupplier();
+		 *      });
+		 *
+		 * 		registry.registerBeanDefinition("helloServiceBySupplier",rbd);
+		 *    }
+		 * }
 		 */
 		Supplier<?> instanceSupplier = mbd.getInstanceSupplier();
 		if (instanceSupplier != null) {
 			return obtainFromSupplier(instanceSupplier, beanName);
 		}
 
-		// 处理 factoryMethod
-		// @Bean
+		/**
+		 * 这边主要是处理FactoryMethod
+		 * 1、 @Bean
+		 * 2、 <bean id="helloServiceFactory" class="com.lexi.service.xml.HelloServiceFactory"></bean>
+		 *     <bean id="helloServiceCreateByFactory" factory-bean="helloServiceFactory" factory-method="createHelloServiceCreateByFactory"></bean>
+		 * 3、 <bean id="helloServiceCreateByStaticFactory" class="com.lexi.service.xml.HelloServiceStaticFactory" factory-method="createHelloServiceCreateByStaticFactory"></bean>
+		 *
+		 * 这边原理其实很简单，就是调用Method.invoke()
+		 */
 		if (mbd.getFactoryMethodName() != null) {
 			return instantiateUsingFactoryMethod(beanName, mbd, args);
 		}
 
-		// Shortcut when re-creating the sa me bean...
 
-		// 创建一个对象一般就俩种方法，new or reflection
-		// spring 这边只能采用反射
-		// 那么spring就需要知道采用什么构造方法
-		// 下面spring需要做的就是推断构造方法
+		/**
+		 * java 中创建对象一般有俩种方式
+		 * 1、 new一个对象
+		 * 2. 调用反射创建对象
+		 * spring中只能采用反射的方法来创建对象
+		 * 采用反射就需要知道采用什么构造方法
+		 * 下面的代码就是Spring用来推断构造方法的
+		 */
 
-		// resolved 构造方法缓存 推导出来的构造方法将会存储到mbd.resolvedConstructorOrFactoryMethod
-		// 这种情况一般用在prototype
 
+		// resolved , 当前是否已经解析,如果已经解析，就不在重新推断构造方法
+		// spring会将推导出来的构造方法将会存储到mbd.resolvedConstructorOrFactoryMethod
+		// 这种情况一般用在prototypes
 		boolean resolved = false;
+		// 是否需要注入构造方法参数
 		boolean autowireNecessary = false;
 
-		// 这个args 没找到地方不为null
-		// 可能spring会在其他框架中扩展他，重写createBean()
+		// 这个args 是方法中传参过来的，一路追踪过去，发现最终为null
+		// spring提个这个参数估计是为了将来扩展
 		if (args == null) {
 			synchronized (mbd.constructorArgumentLock) {
-				// 判断当前bd有没有推导出构造方法
-				// mbd.resolvedConstructorOrFactoryMethod 被解析出的构造方法或者工厂方法的缓存
+				// mbd.resolvedConstructorOrFactoryMethod != null 表示当前构造方法已经解析过
+				// 此时已经缓存到了mbd.resolvedConstructorOrFactoryMethod中
+				// 此种情况一般出现在 prototypes
 				if (mbd.resolvedConstructorOrFactoryMethod != null) {
 					resolved = true;
 					autowireNecessary = mbd.constructorArgumentsResolved;
@@ -1313,23 +1336,26 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			}
 		}
 
-		// 使用推倒出的构造方法创建对象
+		// 当前构造方法已经解析过
 		if (resolved) {
 			if (autowireNecessary) {
+				// 使用有参构造方法创建对象
 				return autowireConstructor(beanName, mbd, null, null);
 			}
 			else {
+				// 使用默认无参构造方法创建对象
 				return instantiateBean(beanName, mbd);
 			}
 		}
 
-		// Candidate constructors for autowiring?
-
-		// 第二次执行执行后置处理器BeanPostProcessor
-		// 用来确定构造方法，主要逻辑如下
-		// 1. 这边的逻辑是如果存在@Autowired(required=true)的构造方法。直接返回当前构造方法
-		// 2. 如果不存在required=true的构造方法，但是存在required=false的构造方法，返回默认构造方法和@Autowired(required=false)的构造方法
-		// 3. 如果有且只存在一个构造方法，并且当前构造方法的参数>0 那么返回当前构造方法
+		/**
+		 * 使用后置处理器来推断构造方法，这是spring第二次执行后置处理器
+		 * SmartInstantiationAwareBeanPostProcessor  determineCandidateConstructors
+		 * 主要逻辑如下：
+		 * 1、 这边的逻辑是如果存在@Autowired(required=true)的构造方法。直接返回当前构造方法
+		 * 2、 如果不存在required=true的构造方法，但是存在required=false的构造方法，返回默认构造方法和@Autowired(required=false)的构造方法
+		 * 3、 如果有且只存在一个构造方法，并且当前构造方法的参数>0 那么返回当前构造方法
+		 */
 		Constructor<?>[] ctors = determineConstructorsFromBeanPostProcessors(beanClass, beanName);
 
 		// ctors != null
@@ -1342,7 +1368,6 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			return autowireConstructor(beanName, mbd, ctors, args);
 		}
 
-		// Preferred constructors for default construction?
 		// 这边暂时是一个空方法，可以为了以后扩展
 		ctors = mbd.getPreferredConstructors();
 		if (ctors != null) {

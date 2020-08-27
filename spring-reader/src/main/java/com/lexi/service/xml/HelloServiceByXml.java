@@ -1,5 +1,6 @@
-package com.lexi.service;
+package com.lexi.service.xml;
 
+import com.lexi.service.HelloServiceAutowired2;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
