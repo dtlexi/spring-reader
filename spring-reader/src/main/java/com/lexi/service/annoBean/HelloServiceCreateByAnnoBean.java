@@ -1,4 +1,4 @@
-package com.lexi.service;
+package com.lexi.service.annoBean;
 
 import org.springframework.context.annotation.Bean;
 
