@@ -1288,6 +1288,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		 */
 		Supplier<?> instanceSupplier = mbd.getInstanceSupplier();
 		if (instanceSupplier != null) {
+			// 直接调用supplier的get方法
 			return obtainFromSupplier(instanceSupplier, beanName);
 		}
 
