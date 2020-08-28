@@ -135,8 +135,6 @@ class ConstructorResolver {
 		 *		spring 会
 		 * 3. 多个构造方法,其中参数最多的构造方法存在一个参数无法解析（String,int...等spring不知道怎么赋值的）
 		 */
-
-
 		BeanWrapperImpl bw = new BeanWrapperImpl();
 		this.beanFactory.initBeanWrapper(bw);
 
@@ -475,24 +473,39 @@ class ConstructorResolver {
 	public BeanWrapper instantiateUsingFactoryMethod(
 			String beanName, RootBeanDefinition mbd, @Nullable Object[] explicitArgs) {
 
+		// 定义BeanWrapperImpl对象
 		BeanWrapperImpl bw = new BeanWrapperImpl();
 		this.beanFactory.initBeanWrapper(bw);
 
+		/**
+		 * factory method 原理很简单：factoryMethod.invoke(factoryBean, args);
+		 * 1、 factoryMethod：创建对象的方法
+		 * 2、 factoryBean：factoryMethod所在的对象，如果factoryBean is null，表示当前factoryMethod是静态方法
+		 * 3、 args：factoryMethod对应的参数
+		 */
+
+		// factoryBean
 		Object factoryBean;
+		// factoryBean对呀的类
 		Class<?> factoryClass;
+		// 是否是静态方法
 		boolean isStatic;
 
+		// 下面的代码是根据factory bean name获取对应的factory bean ,factory bean class
+		// 如果factoryBeanName is null 表示当前是静态方法
 		String factoryBeanName = mbd.getFactoryBeanName();
 		if (factoryBeanName != null) {
 			if (factoryBeanName.equals(beanName)) {
 				throw new BeanDefinitionStoreException(mbd.getResourceDescription(), beanName,
 						"factory-bean reference points back to the same bean definition");
 			}
+			// 获取factoryBean
 			factoryBean = this.beanFactory.getBean(factoryBeanName);
 			if (mbd.isSingleton() && this.beanFactory.containsSingleton(beanName)) {
 				throw new ImplicitlyAppearedSingletonException();
 			}
 			factoryClass = factoryBean.getClass();
+			// 表示当前是instance factory method
 			isStatic = false;
 		}
 		else {
@@ -503,13 +516,17 @@ class ConstructorResolver {
 			}
 			factoryBean = null;
 			factoryClass = mbd.getBeanClass();
+			// 表示当前是static factory method
 			isStatic = true;
 		}
 
+		// 使用到的factory method
 		Method factoryMethodToUse = null;
 		ArgumentsHolder argsHolderToUse = null;
+		// factory method对应的参数
 		Object[] argsToUse = null;
 
+		// 是否有传递参数，explicitArgs和推倒构造方法一样，一般为空
 		if (explicitArgs != null) {
 			argsToUse = explicitArgs;
 		}
@@ -526,6 +543,7 @@ class ConstructorResolver {
 				}
 			}
 			if (argsToResolve != null) {
+				// 处理传递的参数，比如“1”->1
 				argsToUse = resolvePreparedArguments(beanName, mbd, bw, factoryMethodToUse, argsToResolve, true);
 			}
 		}
@@ -533,9 +551,15 @@ class ConstructorResolver {
 		if (factoryMethodToUse == null || argsToUse == null) {
 			// Need to determine the factory method...
 			// Try all methods with this name to see if they match the given arguments.
+
+			// 处理Class 将cglib class转换为原始的class
+			// 这边你是处理@Configuration标注的注解类
 			factoryClass = ClassUtils.getUserClass(factoryClass);
 
 			List<Method> candidates = null;
+			// mbd.isFactoryMethodUnique 是否是唯一的FactoryMethod，不可能存在重载的
+			// 此种情况不需要推断FactoryMethod
+			// 这种情况一般是@Bean情况下
 			if (mbd.isFactoryMethodUnique) {
 				if (factoryMethodToUse == null) {
 					factoryMethodToUse = mbd.getResolvedFactoryMethod();

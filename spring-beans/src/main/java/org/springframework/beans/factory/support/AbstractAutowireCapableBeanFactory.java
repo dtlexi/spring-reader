@@ -1394,6 +1394,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		String outerBean = this.currentlyCreatedBean.get();
 		this.currentlyCreatedBean.set(beanName);
 		try {
+			// 调用instanceSupplier的get方法
 			instance = instanceSupplier.get();
 		}
 		finally {

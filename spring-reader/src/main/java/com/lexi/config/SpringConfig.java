@@ -3,7 +3,7 @@ package com.lexi.config;
 import com.lexi.service.annoBean.HelloServiceCreateByAnnoBean;
 import org.springframework.context.annotation.*;
 
-//@Configuration
+@Configuration
 @ComponentScan("com.lexi")
 @EnableAspectJAutoProxy
 @ImportResource("classpath:beans.xml")

@@ -6,4 +6,13 @@ public class HelloServiceFactory {
 		return new HelloServiceCreateByFactory();
 	}
 
+	public HelloServiceCreateByFactory createHelloServiceCreateByFactory(String str)
+	{
+		return new HelloServiceCreateByFactory();
+	}
+
+	public void sayHello()
+	{
+		System.out.println("hello spring");
+	}
 }
