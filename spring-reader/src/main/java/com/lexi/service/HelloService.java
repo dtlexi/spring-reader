@@ -1,18 +1,12 @@
 package com.lexi.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Lookup;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
 import java.util.List;
 
 @Component
-public class HelloService {
+public class HelloService implements IHelloService {
 	@Autowired
 	List<IHelloServiceAutowired> helloServiceAutowired;
 

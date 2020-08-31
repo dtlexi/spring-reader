@@ -14,7 +14,9 @@
 
 	<bean id="helloServiceFactory" class="com.lexi.service.xml.HelloServiceFactory"></bean>
 
-	<bean id="helloServiceCreateByFactory" factory-bean="helloServiceFactory" factory-method="createHelloServiceCreateByFactory"></bean>
+	<bean id="helloServiceCreateByFactory" factory-bean="helloServiceFactory" factory-method="createHelloServiceCreateByFactory" autowire="constructor">
+		<constructor-arg name="age" value="1"></constructor-arg>
+	</bean>
 
 	<bean id="helloServiceCreateByStaticFactory" class="com.lexi.service.xml.HelloServiceStaticFactory" factory-method="createHelloServiceCreateByStaticFactory"></bean>
 </beans>
