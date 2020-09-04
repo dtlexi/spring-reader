@@ -549,9 +549,6 @@ class ConstructorResolver {
 		}
 
 		if (factoryMethodToUse == null || argsToUse == null) {
-			// Need to determine the factory method...
-			// Try all methods with this name to see if they match the given arguments.
-
 			// 处理Class 将cglib class转换为原始的class
 			// 这边你是处理@Configuration标注的注解类
 			factoryClass = ClassUtils.getUserClass(factoryClass);
