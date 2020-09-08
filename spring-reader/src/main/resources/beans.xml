@@ -18,5 +18,9 @@
 		<constructor-arg name="age" value="1"></constructor-arg>
 	</bean>
 
+	<bean id="helloServiceWithLookupByXml" class="com.lexi.service.xml.HelloServiceWithLookupByXml">
+		<lookup-method name="getHelloServiceAutowired1"></lookup-method>
+	</bean>
+
 	<bean id="helloServiceCreateByStaticFactory" class="com.lexi.service.xml.HelloServiceStaticFactory" factory-method="createHelloServiceCreateByStaticFactory"></bean>
 </beans>

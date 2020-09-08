@@ -6,11 +6,11 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class HelloServiceWithAnnoCons {
-	@Autowired(required = false)
-	public HelloServiceWithAnnoCons()
-	{
-
-	}
+//	@Autowired(required = false)
+//	public HelloServiceWithAnnoCons()
+//	{
+//
+//	}
 
 	@Autowired(required = true)
 	public HelloServiceWithAnnoCons(HelloService helloService)
