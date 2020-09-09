@@ -221,14 +221,15 @@ public class CglibSubclassingInstantiationStrategy extends SimpleInstantiationSt
 			if (logger.isTraceEnabled()) {
 				logger.trace("MethodOverride for " + method + ": " + methodOverride);
 			}
+			// 如果当前不存在methodOverride,调用第零个callback
 			if (methodOverride == null) {
 				return PASSTHROUGH;
 			}
-			// 如果是Lookup，那么调用地1个calll back
+			// 如果是Lookup，那么调用第一个calll back
 			else if (methodOverride instanceof LookupOverride) {
 				return LOOKUP_OVERRIDE;
 			}
-			// 如果是Replace，那么调用地2个calll back
+			// 如果是Replace，那么调用第二个calll back
 			else if (methodOverride instanceof ReplaceOverride) {
 				return METHOD_REPLACER;
 			}
