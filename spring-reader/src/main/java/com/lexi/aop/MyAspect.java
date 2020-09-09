@@ -17,6 +17,6 @@ public class MyAspect {
 	@Before("PointCut()")
 	public void before()
 	{
-		System.out.println("before ........");
+//		System.out.println("before ........");
 	}
 }

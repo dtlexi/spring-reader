@@ -113,14 +113,19 @@ public class CglibSubclassingInstantiationStrategy extends SimpleInstantiationSt
 		 * @return new instance of the dynamically generated subclass
 		 */
 		public Object instantiate(@Nullable Constructor<?> ctor, Object... args) {
+			// 创建cglib代理类
 			Class<?> subclass = createEnhancedSubclass(this.beanDefinition);
 			Object instance;
 			if (ctor == null) {
+				// 如果当前没有构造方法，直接实例化当前代理类生成代理对象
 				instance = BeanUtils.instantiateClass(subclass);
 			}
 			else {
 				try {
+					// 如果当前有构造方法
+					// 通过参数获取到对应参数的代理类的构造方法
 					Constructor<?> enhancedSubclassConstructor = subclass.getConstructor(ctor.getParameterTypes());
+					// 通过代理类的构造方法生成代理独享
 					instance = enhancedSubclassConstructor.newInstance(args);
 				}
 				catch (Exception ex) {
@@ -130,6 +135,8 @@ public class CglibSubclassingInstantiationStrategy extends SimpleInstantiationSt
 			}
 			// SPR-10785: set callbacks directly on the instance instead of in the
 			// enhanced class (via the Enhancer) in order to avoid memory leaks.
+
+			// 直接在实例上设置回调，而不是在增强的类中(通过增强器)设置回调，以避免内存泄漏。
 			Factory factory = (Factory) instance;
 			factory.setCallbacks(new Callback[] {NoOp.INSTANCE,
 					new LookupOverrideMethodInterceptor(this.beanDefinition, this.owner),
@@ -214,14 +221,15 @@ public class CglibSubclassingInstantiationStrategy extends SimpleInstantiationSt
 			if (logger.isTraceEnabled()) {
 				logger.trace("MethodOverride for " + method + ": " + methodOverride);
 			}
+			// 如果当前不存在methodOverride,调用第零个callback
 			if (methodOverride == null) {
 				return PASSTHROUGH;
 			}
-			// 如果是Lookup，那么调用地1个calll back
+			// 如果是Lookup，那么调用第一个calll back
 			else if (methodOverride instanceof LookupOverride) {
 				return LOOKUP_OVERRIDE;
 			}
-			// 如果是Replace，那么调用地2个calll back
+			// 如果是Replace，那么调用第二个calll back
 			else if (methodOverride instanceof ReplaceOverride) {
 				return METHOD_REPLACER;
 			}

@@ -276,7 +276,8 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 
 		// Let's check for lookup methods here...
 
-		// 检查LookUp
+		// 处理@Lookup注解
+		// 设置bd的override
 		if (!this.lookupMethodsChecked.contains(beanName)) {
 			if (AnnotationUtils.isCandidateClass(beanClass, Lookup.class)) {
 				try {
@@ -358,15 +359,16 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 						if (ann == null) {
 							// ClassUtils.getUserClass(beanClass) 大部分情况返回beanClass
 							// 如果beanClass是一个cglib代理的类则返回当前父类，即目标类
-
 							Class<?> userClass = ClassUtils.getUserClass(beanClass);
 
 							// userClass != beanClass 表示当前类是一个cglib代理类
 							// 这边有一个经典的场景即加了@Configuration注解的配置类
 							if (userClass != beanClass) {
 								try {
+									// 这边是如果CGLIB的代理类，重新在获取一次构造方法
 									Constructor<?> superCtor =
 											userClass.getDeclaredConstructor(candidate.getParameterTypes());
+									// 重新获取一下当前构造方法的代理注解
 									ann = findAutowiredAnnotation(superCtor);
 								}
 								catch (NoSuchMethodException ex) {
