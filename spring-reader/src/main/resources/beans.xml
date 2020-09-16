@@ -8,6 +8,11 @@
 		<lookup-method name="getHelloServiceAutowired2"></lookup-method>
 	</bean>
 
+
+	<bean id="parent" abstract="true" autowire="constructor" scope="prototype"></bean>
+	<bean id="helloServiceByParent" class="com.lexi.service.xml.HelloServiceByParent" parent="parent"></bean>
+
+
 	<bean id="testLookUpService" class="com.lexi.service.TestLookUpService">
 		<lookup-method name="getHelloService"></lookup-method>
 	</bean>

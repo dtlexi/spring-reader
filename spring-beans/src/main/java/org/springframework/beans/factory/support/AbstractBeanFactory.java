@@ -301,7 +301,10 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			}
 
 			try {
+				// 合并bd
 				final RootBeanDefinition mbd = getMergedLocalBeanDefinition(beanName);
+
+				// 检查合并后的bd,如果bd isAbstract，报错
 				checkMergedBeanDefinition(mbd, beanName, args);
 
 				// Guarantee initialization of beans that the current bean depends on.
@@ -1336,6 +1339,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				mbd = this.mergedBeanDefinitions.get(beanName);
 			}
 
+			//
 			if (mbd == null || mbd.stale) {
 				previous = mbd;
 
