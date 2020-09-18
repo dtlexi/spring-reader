@@ -18,7 +18,7 @@ public class Reader {
 //		System.out.println(helloServiceWithLookupByXml.getHelloServiceAutowired1());
 //		System.out.println(helloServiceWithLookupByXml.getHelloServiceAutowired1(context.getBean(HelloService.class)));
 //
-//		System.out.println(context.getBean(SupplierService.class));
+		System.out.println(context.getBean(SupplierService.class));
 
 		System.out.println(context.getBean("helloServiceByParent"));
 		System.out.println(context.getBean("helloServiceByParent"));
