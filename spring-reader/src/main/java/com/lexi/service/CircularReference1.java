@@ -6,9 +6,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class CircularReference1 {
 	@Autowired
-	private CircularReference2 circularReference2;
+	public CircularReference2 circularReference2;
+
 
 	public void say(){
+		System.out.println(this.circularReference2);
 		System.out.println("CircularReference1");
 	}
 }

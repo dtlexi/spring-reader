@@ -18,6 +18,12 @@ public class Reader {
 //		System.out.println(helloServiceWithLookupByXml.getHelloServiceAutowired1());
 //		System.out.println(helloServiceWithLookupByXml.getHelloServiceAutowired1(context.getBean(HelloService.class)));
 //
+		HelloService helloService=context.getBean(HelloService.class);
+
+		CircularReference1 circularReference1=context.getBean(CircularReference1.class);
+		circularReference1.say();
+		System.out.println(circularReference1.circularReference2);
+
 		System.out.println(context.getBean(SupplierService.class));
 
 		System.out.println(context.getBean("helloServiceByParent"));
