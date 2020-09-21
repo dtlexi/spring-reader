@@ -11,6 +11,9 @@ public class HelloService implements IHelloService {
 	List<IHelloServiceAutowired> helloServiceAutowired;
 
 	@Autowired
+	CircularReference1 circularReference1;
+
+	@Autowired
 	HelloServiceAutowiredLazy helloServiceAutowiredLazy;
 //	@Resource
 //	HelloServiceCreateByAnnoBean helloServiceCreateByAnnoBean;

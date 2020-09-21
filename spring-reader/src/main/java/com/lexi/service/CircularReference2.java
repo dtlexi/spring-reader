@@ -7,4 +7,9 @@ import org.springframework.stereotype.Component;
 public class CircularReference2 {
 	@Autowired
 	private CircularReference1 circularReference1;
+
+	public void say(){
+		System.out.println(this.circularReference1);
+		System.out.println("circularReference2");
+	}
 }

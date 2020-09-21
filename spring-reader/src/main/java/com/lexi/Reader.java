@@ -13,15 +13,13 @@ import org.springframework.stereotype.Component;
 public class Reader {
 	public static void main(String[] args) throws Exception {
 		ApplicationContext context=new AnnotationConfigApplicationContext(SpringConfig.class);
-//		HelloServiceWithLookupByXml helloServiceWithLookupByXml= (HelloServiceWithLookupByXml) context.getBean("helloServiceWithLookupByXml");
-//
-//		System.out.println(helloServiceWithLookupByXml.getHelloServiceAutowired1());
-//		System.out.println(helloServiceWithLookupByXml.getHelloServiceAutowired1(context.getBean(HelloService.class)));
-//
+
+		HelloServiceAutowired1 helloServiceAutowired1=context.getBean(HelloServiceAutowired1.class);
+		CircularReference1 circularReference1=context.getBean(CircularReference1.class);
 		HelloService helloService=context.getBean(HelloService.class);
 
-		CircularReference1 circularReference1=context.getBean(CircularReference1.class);
-		circularReference1.say();
+//		CircularReference1 circularReference1=context.getBean(CircularReference1.class);
+//		circularReference1.say();
 		System.out.println(circularReference1.circularReference2);
 
 		System.out.println(context.getBean(SupplierService.class));
