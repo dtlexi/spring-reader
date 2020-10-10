@@ -1582,6 +1582,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			MutablePropertyValues newPvs = new MutablePropertyValues(pvs);
 			// Add property values based on autowire by name if applicable.
 			if (resolvedAutowireMode == AUTOWIRE_BY_NAME) {
+				// 根据当前beanclass找出所有属性name
+				// 根据属性name getBean(beanName)
+				// 将bean存储到newPvs
+				// 这边不会set属性，set是在最后applyPropertyValues才会执行
 				autowireByName(beanName, mbd, bw, newPvs);
 			}
 			// Add property values based on autowire by type if applicable.
@@ -1652,10 +1656,21 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	protected void autowireByName(
 			String beanName, AbstractBeanDefinition mbd, BeanWrapper bw, MutablePropertyValues pvs) {
 
+		// 获取属性
+		// private HelloService helloService;
+		//	public HelloService getHelloService111() {
+		//		return helloService;
+		//	}
+		//	public void setHelloService111(HelloService helloService) {
+		//		this.helloService = helloService;
+		//	}
+		// 此时获取到的propertyName是helloService111而不是helloService
 		String[] propertyNames = unsatisfiedNonSimpleProperties(mbd, bw);
 		for (String propertyName : propertyNames) {
 			if (containsBean(propertyName)) {
+				// getBean()
 				Object bean = getBean(propertyName);
+				// 将获取到的bean添加到pvs中，到了后面会赋值，当前方法不会赋值
 				pvs.add(propertyName, bean);
 				registerDependentBean(propertyName, beanName);
 				if (logger.isTraceEnabled()) {
@@ -1706,10 +1721,14 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 					MethodParameter methodParam = BeanUtils.getWriteMethodParameter(pd);
 					// Do not allow eager init for type matching in case of a prioritized post-processor.
 					boolean eager = !(bw.getWrappedInstance() instanceof PriorityOrdered);
+
+					// 封装的依赖描述
 					DependencyDescriptor desc = new AutowireByTypeDependencyDescriptor(methodParam, eager);
-					// getBean() 属性对呀的参数
+					// resolveDependency 依赖还原
+					// 获取属性对应的bean
 					Object autowiredArgument = resolveDependency(desc, beanName, autowiredBeanNames, converter);
 					if (autowiredArgument != null) {
+						// 添加到pvs
 						pvs.add(propertyName, autowiredArgument);
 					}
 					for (String autowiredBeanName : autowiredBeanNames) {
@@ -2079,7 +2098,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		// 如果提供了init-method，调用当前方法
 		// 大体思路是：
 		// 	根据class和methodName，找到对应的Method
-		//	method.invoke()
+		//	method.invoke(bean)
 		if (mbd != null && bean.getClass() != NullBean.class) {
 			String initMethodName = mbd.getInitMethodName();
 			if (StringUtils.hasLength(initMethodName) &&

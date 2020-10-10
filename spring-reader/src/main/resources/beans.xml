@@ -28,4 +28,8 @@
 	</bean>
 
 	<bean id="helloServiceCreateByStaticFactory" class="com.lexi.service.xml.HelloServiceStaticFactory" factory-method="createHelloServiceCreateByStaticFactory"></bean>
+
+	<bean id="helloServiceAutowireByName" class="com.lexi.service.autowire.HelloServiceAutowireByName" autowire="byName"></bean>
+	<bean id="helloServiceAutowireByType" class="com.lexi.service.autowire.HelloServiceAutowireByType" autowire="byType"></bean>
+
 </beans>

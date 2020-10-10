@@ -225,14 +225,6 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 				 * 如果不适用earlySingletonObjects有俩种解决方法：我们来分析一下是否可行
 				 * 	1. 	每次都调用singletonFactories.get(),此时会重新生产一个代理对象
 				 * 		这种方案明显行不通，每次重新get一个相当于每次都执行 getEarlyBeanReference，重新产生一个代理对象，效率低
-				 * 	2. 	对象初始化出来后直接放入 singletonFactories 中，这样看似能解决上面的问题
-				 * 		但是你想想 singletonFactories 的作用。singletonFactories中存放的是完整的对象，即取即用的。
-				 * 		如果对象没有初始化完成就放入 singletonFactories 中，那么每次取出该对象时都没法确定该对象是否初始化完成
-				 * 		每次使用该对象是我都得去判断一下该对象是否初始化完成，这个不好判断不说，关键浪费性能
-				 * 还有人可能问为什么不用 singletonObjects 和 earlySingletonObjects 呢
-				 * 		因为循环引用是可能出现aop，而一般aop是在属性赋值完后开始代理的(populateBean()方法后)，如果刚开始就直接放入将对象放入 populateBean
-				 * 		那么拿出的对象时代理对象之前的对象，不是我们想要的对象，而传入一个工厂对象就不一样了，我们想要什么对象，就能生产什么对象
-				 *
 				 * 为什么不直接将aop提到populateBean之前
 				 * 我哪知道，问spring去
 				 */
