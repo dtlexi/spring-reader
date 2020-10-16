@@ -1724,8 +1724,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 					// 封装的依赖描述
 					DependencyDescriptor desc = new AutowireByTypeDependencyDescriptor(methodParam, eager);
-					// resolveDependency 依赖还原
+
 					// 获取属性对应的bean
+					// 类似于getBean()
+					// 这边比较复杂，考虑到List,Map...
 					Object autowiredArgument = resolveDependency(desc, beanName, autowiredBeanNames, converter);
 					if (autowiredArgument != null) {
 						// 添加到pvs
@@ -1911,8 +1913,33 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				deepCopy.add(pv);
 			}
 			else {
+				// 属性名称
 				String propertyName = pv.getName();
+				// 这边分俩种情况
+				// 1. autowire_by_type or autowire_by_name or bd.addPropertyValues()
+				//		这种情况 originalValue 直接是前面autowireByName()、autowireByType中获取的值
+				// 2. <property name="xxx" value="xxx" ref="xxx"></property>
+				// 		这种情况originalValue 是封装的值
+				//		1. <property name="helloServiceAutowireByName" ref="helloServiceAutowireByName"></property>
+				//			RuntimeBeanReference 详见：https://i.niupic.com/images/2020/10/12/8RQp.png
+				//		2. <property name="age" value="10"></property>
+				//			TypedStringValue  详见：https://i.niupic.com/images/2020/10/12/8RQs.png
+				//		3. <property name="name" value="lexi"></property>
+				//			TypedStringValue  详见：https://i.niupic.com/images/2020/10/12/8RQu.png
+				//		4. <property name="size">
+				//				<list>
+				//					<value>1</value>
+				//					<value>2</value>
+				//					<value>4</value>
+				//				</list>
+				//			</property>
+				//			ManagedList https://i.niupic.com/images/2020/10/12/8RQv.png
+				//			其中每个value都是一个TypedStringValue
+				//		5. <property name="height" value="#{18}"></property>
+				//			TypedStringValue  详见：https://i.niupic.com/images/2020/10/12/8RQu.png
 				Object originalValue = pv.getValue();
+
+				// 不知道干嘛的，没看懂，但是不影响主要流程，这边就不跟进了
 				if (originalValue == AutowiredPropertyMarker.INSTANCE) {
 					Method writeMethod = bw.getPropertyDescriptor(propertyName).getWriteMethod();
 					if (writeMethod == null) {
@@ -1920,21 +1947,60 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 					}
 					originalValue = new DependencyDescriptor(new MethodParameter(writeMethod, 0), true);
 				}
+
+
+				// 第一次解析参数
+				// 1. 	<property name="helloServiceAutowireByName" ref="helloServiceAutowireByName"></property>
+				//		此时对应的originalValue的类型是RuntimeBeanReference
+				// 		此时会调用getBean("helloServiceAutowireByName")获取参数
+				//		此时resolvedValue对于的是获取到的bean
+				// 2. 	<property name="age" value="10"></property>
+				//		此时对应的originalValue的类型是TypedStringValue
+				//		此时会调用evaluate(typedStringValue)，会将“10”当做el表达式解析，返回的是“10”
+				//		此时resolvedValue对应的是“10”，是String
+				// 3. 	<property name="name" value="lexi"></property>
+				//		此时对应的originalValue的类型是TypedStringValue
+				//		此时同上
+				// 4. 	<property name="size">
+				//			<list>
+				//				<value>1</value>
+				//				<value>2</value>
+				//				<value>4</value>
+				//			</list>
+				//	   	</property>
+				//		此时对应的originalValue的类型是ManagedList
+				//		ManagedList,ManagedArray,ManagedSet,ManagedMap等等都是循环遍历调用resolveValueIfNecessary
+				//		解析每一个<value>1</value>的el表达式
+				//		此时resolvedValue对应的是List<String>(){"1","2","4"}
+				// 5. 	<property name="height" value="#{18}"></property>
+				//		此时对应的originalValue的类型是TypedStringValue
+				//		此时会调用evaluate(typedStringValue)，会解析el表达式"#{18}"，得到int 18
+				// 		此时resolvedValue对应的是18，是int类型
 				Object resolvedValue = valueResolver.resolveValueIfNecessary(pv, originalValue);
 				Object convertedValue = resolvedValue;
+				// convertible 表示属性值是否可转换，由两个条件合成而来
+				// 1. 是否是写属性
+				// 2. 检测 propertyName 是否是 nested(嵌套的) 或者 indexed
+				//	  所谓的嵌套值 <property name="person.name" value="张三"></property>或者
+				//    <property name="size[0]" value="1"></property>
+				// 第二种情况基本没用过
 				boolean convertible = bw.isWritableProperty(propertyName) &&
 						!PropertyAccessorUtils.isNestedOrIndexedProperty(propertyName);
 				if (convertible) {
+					// 第二次转换
+					// 此次转换是将String转int,float,double...
 					convertedValue = convertForProperty(resolvedValue, propertyName, bw, converter);
 				}
-				// Possibly store converted value in merged bean definition,
-				// in order to avoid re-conversion for every created bean instance.
+
+				// 如果resolvedValue == originalValue，
+				// 代表此时originalValue是从autowireByType or autowireByName or bd.addPropertyValues 而来
 				if (resolvedValue == originalValue) {
 					if (convertible) {
 						pv.setConvertedValue(convertedValue);
 					}
 					deepCopy.add(pv);
 				}
+				// String
 				else if (convertible && originalValue instanceof TypedStringValue &&
 						!((TypedStringValue) originalValue).isDynamic() &&
 						!(convertedValue instanceof Collection || ObjectUtils.isArray(convertedValue))) {
@@ -1953,6 +2019,11 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		// Set our (possibly massaged) deep copy.
 		try {
+			// 属性赋值
+			// 原理很简单，writeMethod.invoke()
+			// spring实现的很复杂，因为这边可能存在嵌套属性或者Indexed
+			// <property name="person.name" value="张三"></property>
+			// <property name="size[0]" value="1"></property>
 			bw.setPropertyValues(new MutablePropertyValues(deepCopy));
 		}
 		catch (BeansException ex) {

@@ -236,13 +236,21 @@ public abstract class AbstractNestablePropertyAccessor extends AbstractPropertyA
 	public void setPropertyValue(String propertyName, @Nullable Object value) throws BeansException {
 		AbstractNestablePropertyAccessor nestedPa;
 		try {
+			// 这里是为了解决嵌套属性的情况，比如一个person对象中，包含一个dog对象，dog对象中有一个name属性
+			// 那么我们可以通过dog.name这种方式来将一个名字直接绑定到person中的dog上
+			// 与此同时，我们不能再使用person的属性访问器了，因为使用dog的属性访问器，这里就是返回dog的属性访问器
 			nestedPa = getPropertyAccessorForPropertyPath(propertyName);
 		}
 		catch (NotReadablePropertyException ex) {
 			throw new NotWritablePropertyException(getRootClass(), this.nestedPath + propertyName,
 					"Nested property in path '" + propertyName + "' does not exist", ex);
 		}
+		// PropertyTokenHolder是什么呢？例如我们的Person对象中有一个List<String> name的属性，
+		// 那么我们在绑定时，需要对List中的元素进行赋值，所有我们会使用name[0],name[1]这种方式来进行绑定，
+		// 而PropertyTokenHolder中有三个属性，其中actualName代表name,canonicalName代表整个表达式name[0],而key则代表0这个下标位置
 		PropertyTokenHolder tokens = getPropertyNameTokens(getFinalPath(nestedPa, propertyName));
+
+		// 最后通过属性访问器设置值
 		nestedPa.setPropertyValue(tokens, new PropertyValue(propertyName, value));
 	}
 
@@ -253,12 +261,19 @@ public abstract class AbstractNestablePropertyAccessor extends AbstractPropertyA
 			String propertyName = pv.getName();
 			AbstractNestablePropertyAccessor nestedPa;
 			try {
+				// 这里是为了解决嵌套属性的情况，比如一个person对象中，包含一个dog对象，dog对象中有一个name属性
+				// 那么我们可以通过dog.name这种方式来将一个名字直接绑定到person中的dog上
+				// 与此同时，我们不能再使用person的属性访问器了，因为使用dog的属性访问器，这里就是返回dog的属性访问器
 				nestedPa = getPropertyAccessorForPropertyPath(propertyName);
 			}
 			catch (NotReadablePropertyException ex) {
 				throw new NotWritablePropertyException(getRootClass(), this.nestedPath + propertyName,
 						"Nested property in path '" + propertyName + "' does not exist", ex);
 			}
+
+			// PropertyTokenHolder是什么呢？例如我们的Person对象中有一个List<String> name的属性，
+			// 那么我们在绑定时，需要对List中的元素进行赋值，所有我们会使用name[0],name[1]这种方式来进行绑定，
+			// 而PropertyTokenHolder中有三个属性，其中actualName代表name,canonicalName代表整个表达式name[0],而key则代表0这个下标位置
 			tokens = getPropertyNameTokens(getFinalPath(nestedPa, propertyName));
 			if (nestedPa == this) {
 				pv.getOriginalPropertyValue().resolvedTokens = tokens;

@@ -1256,9 +1256,19 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			// 处理Lazy
 			// 使用的代理
 			// 这边不是处理的在类上加的注解，而是在属性上加@Lazy
-			// 	@Autowired
-			//	@Lazy
-			//	HelloServiceAutowiredLazy helloServiceAutowiredLazy;
+			// 		@Autowired
+			//		@Lazy
+			//		HelloServiceAutowiredLazy helloServiceAutowiredLazy;
+			// 这边会生成代理，利用TargetSource
+			//  	public interface TargetSource extends TargetClassAware {
+			//			Class<?> getTargetClass();
+			//			boolean isStatic();
+
+			//			Object getTarget() throws Exception;
+			//			void releaseTarget(Object target) throws Exception;
+			//
+			//		}
+			// getTarget时调用doResolveDependency()返回数据
 			Object result = getAutowireCandidateResolver().getLazyResolutionProxyIfNecessary(
 					descriptor, requestingBeanName);
 			if (result == null) {
@@ -1279,24 +1289,46 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			// 这边descriptor有俩种情况：
 			// 	1. 直接是DependencyDescriptor，那么这边会直接返回null
 			//	2. 一种是ShortcutDependencyDescriptor，这边会返回getBean()。
-			// 注释详见：AutowiredAnnotationBeanPostProcessor.AutowiredFieldElement.inject------if (this.cached)处
+
+			// 调用处：
+			// 1. org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.autowireByType
+			//	  此时是属性赋值处理 autowireByType
+			// 	  此时封装的是AutowireByTypeDependencyDescriptor，继承自DependencyDescriptor
+			// 	  并且没有重写resolveShortcut方法，此时返回null
+			//
+			// 2. org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.AutowiredFieldElement.inject
+			//    此时是属性赋值处理@Autowired注解时
+			// 	  这个方法调用了俩次，一次是if (this.cached) 时，此时descriptor是ShortcutDependencyDescriptor,返回的是getBean
+			//					  一次是else 此时直接使用的是DependencyDescriptor，此时是返回null
+			//
+			// 3. 推选构造方法（待完善）
 			Object shortcut = descriptor.resolveShortcut(this);
 			if (shortcut != null) {
 				return shortcut;
 			}
 
-			// 需要注入的类型
+			// 需要注入的参数类型
+			// 这边获取的是 MethodParameter 的 getParameterType
 			Class<?> type = descriptor.getDependencyType();
+
+			// 获取@Value的值
+			// 这边用的到时QualifierAnnotationAutowireCandidateResolver
 			Object value = getAutowireCandidateResolver().getSuggestedValue(descriptor);
 			if (value != null) {
 				if (value instanceof String) {
+					// 解析占位符
 					String strVal = resolveEmbeddedValue((String) value);
 					BeanDefinition bd = (beanName != null && containsBean(beanName) ?
 							getMergedBeanDefinition(beanName) : null);
+
+					// 解析el表达式
 					value = evaluateBeanDefinitionString(strVal, bd);
 				}
+
+				// 类型转换器
 				TypeConverter converter = (typeConverter != null ? typeConverter : getTypeConverter());
 				try {
+					// 类型转换，转换成指定类型
 					return converter.convertIfNecessary(value, type, descriptor.getTypeDescriptor());
 				}
 				catch (UnsupportedOperationException ex) {
@@ -1318,6 +1350,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
 			// 正常情况，获取依赖注入的对象
 			// 如果Bean没有被存入singleObjects（即此时bean没有创建or没有创建完成），那么此时返回class
+			// 如果返回class , 将会在后面getBean()
 			Map<String, Object> matchingBeans = findAutowireCandidates(beanName, type, descriptor);
 			if (matchingBeans.isEmpty()) {
 				// 判断是否@Autowired(required=true)
@@ -1395,6 +1428,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		// 获取注入属性的类型
 		final Class<?> type = descriptor.getDependencyType();
 
+		// 处理StreamDependencyDescriptor
 		if (descriptor instanceof StreamDependencyDescriptor) {
 			Map<String, Object> matchingBeans = findAutowireCandidates(beanName, type, descriptor);
 			if (autowiredBeanNames != null) {
@@ -1556,6 +1590,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		//		2. ApplicationEventPublisher
 		//		3. ResourceLoader
 		//		4. BeanFactory
+		// 这边是spring内部用的，和我们没关系
 		Map<String, Object> result = new LinkedHashMap<>(candidateNames.length);
 		for (Map.Entry<Class<?>, Object> classObjectEntry : this.resolvableDependencies.entrySet()) {
 			Class<?> autowiringType = classObjectEntry.getKey();
@@ -1572,12 +1607,20 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		for (String candidate : candidateNames) {
 			// !isSelfReference(beanName, candidate) 判断当前需要注入的对象和目前正在创建的对象不是同一个类
 			if (!isSelfReference(beanName, candidate) && isAutowireCandidate(candidate, descriptor)) {
-				// 如果singleObjects存在当前对像，那么将当前对象添加到result中
-				// 否则返回当前对象对呀的Class
-				// 为什么不直接创建并且返回对象
+
+				// 这边分为俩种情况
+				// 1. MultiElementDescriptor	即注入集合，数组...等
+				//	  调用getBea()获取对象
+				// 2. 注入单个对象
+				//	  注入对象已经存在当前容器中，调用getBean()获取对象
+				//	  如果注入对象没有创建，返回注入对象的类
+				//	  ?
+				//	  这边为什么返回Class，而不是直接调用getBean()返回对象
 				addCandidateEntry(result, candidate, descriptor, requiredType);
 			}
 		}
+
+		// 补偿机制
 		if (result.isEmpty()) {
 			boolean multiple = indicatesMultipleBeans(requiredType);
 			// Consider fallback matches if the first pass failed to find anything...
@@ -1588,6 +1631,8 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 					addCandidateEntry(result, candidate, descriptor, requiredType);
 				}
 			}
+
+			// 自身引用补偿
 			if (result.isEmpty() && !multiple) {
 				// Consider self references as a final pass...
 				// but in the case of a dependency collection, not the very same bean itself.
@@ -1610,16 +1655,16 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	private void addCandidateEntry(Map<String, Object> candidates, String candidateName,
 			DependencyDescriptor descriptor, Class<?> requiredType) {
 
-		// 集合依赖，直接调用 getName(candidateName) 实例化
-		// List<I> i
+		// 集合依赖，直接调用 getBean(candidateName) 实例化
+		// 这边全部实例化
 		if (descriptor instanceof MultiElementDescriptor) {
 			Object beanInstance = descriptor.resolveCandidate(candidateName, requiredType, this);
 			if (!(beanInstance instanceof NullBean)) {
 				candidates.put(candidateName, beanInstance);
 			}
 		}
-		// 已经实例化，直接返回实例对象
-
+		// 如果需要赋值的参数已经存在于容器中
+		// 此时直接getBean()
 		else if (containsSingleton(candidateName) || (descriptor instanceof StreamDependencyDescriptor &&
 				((StreamDependencyDescriptor) descriptor).isOrdered())) {
 			// getBean() 获取对象

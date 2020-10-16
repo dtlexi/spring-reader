@@ -53,16 +53,19 @@ public class ContextAnnotationAutowireCandidateResolver extends QualifierAnnotat
 	}
 
 	protected boolean isLazy(DependencyDescriptor descriptor) {
+		// 获取当前属性注解
 		for (Annotation ann : descriptor.getAnnotations()) {
 			Lazy lazy = AnnotationUtils.getAnnotation(ann, Lazy.class);
 			if (lazy != null && lazy.value()) {
 				return true;
 			}
 		}
+		// 获取方法参数
 		MethodParameter methodParam = descriptor.getMethodParameter();
 		if (methodParam != null) {
 			Method method = methodParam.getMethod();
 			if (method == null || void.class == method.getReturnType()) {
+				// 参数注解
 				Lazy lazy = AnnotationUtils.getAnnotation(methodParam.getAnnotatedElement(), Lazy.class);
 				if (lazy != null && lazy.value()) {
 					return true;
@@ -76,15 +79,19 @@ public class ContextAnnotationAutowireCandidateResolver extends QualifierAnnotat
 		Assert.state(getBeanFactory() instanceof DefaultListableBeanFactory,
 				"BeanFactory needs to be a DefaultListableBeanFactory");
 		final DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) getBeanFactory();
+		// 定义一个代理TargetSource
 		TargetSource ts = new TargetSource() {
+			// 定义类型
 			@Override
 			public Class<?> getTargetClass() {
 				return descriptor.getDependencyType();
 			}
+			// 是否是静态类
 			@Override
 			public boolean isStatic() {
 				return false;
 			}
+			// 调用getTarget是
 			@Override
 			public Object getTarget() {
 				Object target = beanFactory.doResolveDependency(descriptor, beanName, null, null);

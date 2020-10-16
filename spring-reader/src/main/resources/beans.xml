@@ -5,7 +5,17 @@
 	   http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 	<bean id="helloServiceByXml" class="com.lexi.service.xml.HelloServiceByXml" autowire="byType">
-		<lookup-method name="getHelloServiceAutowired2"></lookup-method>
+		<property name="helloServiceAutowireByName" ref="helloServiceAutowireByName"></property>
+		<property name="age" value="18"></property>
+		<property name="height" value="#{18}"></property>
+		<property name="name" value="lexi"></property>
+		<property name="size">
+			<list>
+				<value>1</value>
+				<value>2</value>
+				<value>4</value>
+			</list>
+		</property>
 	</bean>
 
 

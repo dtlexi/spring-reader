@@ -15,18 +15,11 @@ public class Reader {
 		ApplicationContext context=new AnnotationConfigApplicationContext(SpringConfig.class);
 
 		HelloServiceAutowired1 helloServiceAutowired1=context.getBean(HelloServiceAutowired1.class);
-		CircularReference1 circularReference1=context.getBean(CircularReference1.class);
-		HelloService helloService=context.getBean(HelloService.class);
 
-//		CircularReference1 circularReference1=context.getBean(CircularReference1.class);
-//		circularReference1.say();
-		System.out.println(circularReference1.circularReference2);
+		HelloService helloService= (HelloService) context.getBean("helloService");
+		helloService.sayHello();
 
-		System.out.println(context.getBean(SupplierService.class));
-
-		System.out.println(context.getBean("helloServiceByParent"));
-		System.out.println(context.getBean("helloServiceByParent"));
-		System.out.println(context.getBean("helloServiceByParent"));
+		System.out.println(helloServiceAutowired1);
 	}
 }
 

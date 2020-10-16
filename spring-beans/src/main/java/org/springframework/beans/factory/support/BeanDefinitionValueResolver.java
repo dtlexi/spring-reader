@@ -106,10 +106,12 @@ class BeanDefinitionValueResolver {
 	 */
 	@Nullable
 	public Object resolveValueIfNecessary(Object argName, @Nullable Object value) {
-		// We must check each value to see whether it requires a runtime reference
-		// to another bean to be resolved.
+		// 当前值是否继承自RuntimeBeanReference
+		// 这种情况一般出现在ref
+		// <property name="helloServiceAutowireByName" ref="helloServiceAutowireByName"></property>
 		if (value instanceof RuntimeBeanReference) {
 			RuntimeBeanReference ref = (RuntimeBeanReference) value;
+			// 这边就是直接调用的getBean(beanName)
 			return resolveReference(argName, ref);
 		}
 		else if (value instanceof RuntimeBeanNameReference) {
@@ -200,8 +202,11 @@ class BeanDefinitionValueResolver {
 			return copy;
 		}
 		else if (value instanceof TypedStringValue) {
-			// Convert value to target type here.
+			// 这边一般处理的是下面情况
+			// <property name="age" value="10"></property>
+			// <property name="name" value="lexi"></property>
 			TypedStringValue typedStringValue = (TypedStringValue) value;
+			// 进行el表达式解析，比较复杂
 			Object valueObject = evaluate(typedStringValue);
 			try {
 				Class<?> resolvedTargetType = resolveTargetType(typedStringValue);
