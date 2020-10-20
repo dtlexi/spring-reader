@@ -757,14 +757,18 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	protected boolean isAutowireCandidate(String beanName, DependencyDescriptor descriptor, AutowireCandidateResolver resolver)
 			throws NoSuchBeanDefinitionException {
 
+		// 获取bd name
 		String beanDefinitionName = BeanFactoryUtils.transformedBeanName(beanName);
+		// 是否存在当前beanDefintion
 		if (containsBeanDefinition(beanDefinitionName)) {
 			return isAutowireCandidate(beanName, getMergedLocalBeanDefinition(beanDefinitionName), descriptor, resolver);
 		}
+		// 是否存在当前bean
 		else if (containsSingleton(beanName)) {
 			return isAutowireCandidate(beanName, new RootBeanDefinition(getType(beanName)), descriptor, resolver);
 		}
 
+		// 检查parent
 		BeanFactory parent = getParentBeanFactory();
 		if (parent instanceof DefaultListableBeanFactory) {
 			// No bean definition found in this factory -> delegate to parent.
@@ -1406,6 +1410,8 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			Object result = instanceCandidate;
 			if (result instanceof NullBean) {
 				if (isRequired(descriptor)) {
+					// result is null and autowire is required
+					// throw err
 					raiseNoMatchingBeanFound(type, descriptor.getResolvableType(), descriptor);
 				}
 				result = null;
@@ -1606,6 +1612,9 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
 		for (String candidate : candidateNames) {
 			// !isSelfReference(beanName, candidate) 判断当前需要注入的对象和目前正在创建的对象不是同一个类
+			// isAutowireCandidate(candidate, descriptor) 检查当前是否是注入候选对象
+			// 		1. 检查是否存在当前name=candidate的beanDefintion
+			//		2. 检查是否满足@Qualifier注解
 			if (!isSelfReference(beanName, candidate) && isAutowireCandidate(candidate, descriptor)) {
 
 				// 这边分为俩种情况
@@ -1672,7 +1681,8 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			candidates.put(candidateName, (beanInstance instanceof NullBean ? null : beanInstance));
 		}
 		else {
-			// 真正需要注入时才实例化对象
+			// 这边返回的是Class
+			// 这边为什么不返回getBean()?
 			candidates.put(candidateName, getType(candidateName));
 		}
 	}

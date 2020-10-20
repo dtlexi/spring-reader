@@ -133,7 +133,7 @@ public class InjectionMetadata {
 					logger.trace("Processing injected element of bean '" + beanName + "': " + element);
 				}
 				// 属性注入
-				// 这个方法有俩个重写，分别是AutowiredFieldElement和AutowiredFieldElement，
+				// 这个方法有俩个重写，分别是AutowiredFieldElement和AutowiredMethodElement
 				// 分别为方法和属性完成注入
 				element.inject(target, beanName, pvs);
 			}

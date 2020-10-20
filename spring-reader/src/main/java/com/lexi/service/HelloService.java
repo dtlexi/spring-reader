@@ -1,22 +1,16 @@
 package com.lexi.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.util.List;
 
 @Component
 public class HelloService implements IHelloService {
-//	@Autowired
-//	List<IHelloServiceAutowired> helloServiceAutowired;
-//
-//	@Autowired
-//	CircularReference1 circularReference1;
-//
-//	@Autowired
-//	HelloServiceAutowiredLazy helloServiceAutowiredLazy;
 	@Value("lexi")
 	String name;
 
@@ -26,27 +20,39 @@ public class HelloService implements IHelloService {
 	@Value("180")
 	int height;
 
+	private HelloServiceAutowired1 helloServiceAutowired1;
+	public HelloServiceAutowired1 getHelloServiceAutowired1() {
+		return helloServiceAutowired1;
+	}
 	@Autowired
-	@Lazy
-	public HelloServiceAutowired1 helloServiceAutowired1;
-//	@Resource
-//	HelloServiceCreateByAnnoBean helloServiceCreateByAnnoBean;
-
-//	@Lookup
-//	public HelloServiceAutowired2 getHelloServiceAutowired2(){
-//		return null;
-//	};
-
-	public void sayHello()
-	{
-		System.out.println(this.helloServiceAutowired1);
-////		System.out.println("Hello Spring");
-//		System.out.println(this.helloServiceAutowired);
-//		System.out.println(this.helloServiceAutowiredLazy);
+	public void setHelloServiceAutowired1(HelloServiceAutowired1 helloServiceAutowired1) {
+		this.helloServiceAutowired1 = helloServiceAutowired1;
 	}
 
-//	public void test()
-//	{
-//		this.helloServiceAutowiredLazy.say();
-//	}
+
+	@Autowired
+	public void test(HelloServiceAutowired2 helloServiceAutowired2)
+	{
+		System.out.println(helloServiceAutowired2);
+		System.out.println("test");
+	}
+
+
+	@Resource(name = "helloServiceAutowired2")
+	private HelloServiceAutowired2 helloServiceAutowired2;
+
+
+	@Autowired
+	@Qualifier("helloServiceAutowired1")
+	private IHelloServiceAutowired helloServiceAutowired;
+
+	@Override
+	public String toString() {
+		return "HelloService{" +
+				"name='" + name + '\'' +
+				", age=" + age +
+				", height=" + height +
+				", helloServiceAutowired1=" + helloServiceAutowired1 +
+				'}';
+	}
 }
