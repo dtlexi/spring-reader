@@ -5,7 +5,7 @@ import org.springframework.context.annotation.*;
 
 @Configuration
 @ComponentScan("com.lexi")
-@EnableAspectJAutoProxy
+@EnableAspectJAutoProxy(proxyTargetClass = false)
 @ImportResource("classpath:beans.xml")
 public class SpringConfig {
 	@Bean
@@ -13,6 +13,4 @@ public class SpringConfig {
 	{
 		return new HelloServiceCreateByAnnoBean();
 	}
-
-
 }

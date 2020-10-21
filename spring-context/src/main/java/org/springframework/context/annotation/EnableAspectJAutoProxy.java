@@ -119,6 +119,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
+// Import AspectJAutoProxyRegistrar
 @Import(AspectJAutoProxyRegistrar.class)
 public @interface EnableAspectJAutoProxy {
 
@@ -126,6 +127,8 @@ public @interface EnableAspectJAutoProxy {
 	 * Indicate whether subclass-based (CGLIB) proxies are to be created as opposed
 	 * to standard Java interface-based proxies. The default is {@code false}.
 	 */
+	// proxyTargetClass true 使用CGLIB代理
+	// proxyTargetClass false 如果代理类有接口使用JDK动态代理，如果没有，使用CGLIB代理
 	boolean proxyTargetClass() default false;
 
 	/**
