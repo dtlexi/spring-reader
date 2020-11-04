@@ -147,7 +147,6 @@ public abstract class HttpServletBean extends HttpServlet implements Environment
 	 */
 	@Override
 	public final void init() throws ServletException {
-
 		// Set bean properties from init parameters.
 		PropertyValues pvs = new ServletConfigPropertyValues(getServletConfig(), this.requiredProperties);
 		if (!pvs.isEmpty()) {
@@ -169,6 +168,7 @@ public abstract class HttpServletBean extends HttpServlet implements Environment
 		// Let subclasses do whatever initialization they like.
 		initServletBean();
 	}
+
 
 	/**
 	 * Initialize the BeanWrapper for this HttpServletBean,

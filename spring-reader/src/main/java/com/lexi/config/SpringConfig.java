@@ -5,7 +5,7 @@ import org.springframework.context.annotation.*;
 
 @Configuration
 @ComponentScan("com.lexi")
-@EnableAspectJAutoProxy(proxyTargetClass = false)
+@EnableAspectJAutoProxy(proxyTargetClass = false,exposeProxy = true)
 @ImportResource("classpath:beans.xml")
 public class SpringConfig {
 	@Bean

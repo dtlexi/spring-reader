@@ -20,21 +20,19 @@ public class HelloService implements IHelloService {
 	@Value("180")
 	int height;
 
-	private HelloServiceAutowired1 helloServiceAutowired1;
-	public HelloServiceAutowired1 getHelloServiceAutowired1() {
-		return helloServiceAutowired1;
-	}
-	@Autowired
-	public void setHelloServiceAutowired1(HelloServiceAutowired1 helloServiceAutowired1) {
-		this.helloServiceAutowired1 = helloServiceAutowired1;
-	}
+//	private HelloServiceAutowired1 helloServiceAutowired1;
+//	public HelloServiceAutowired1 getHelloServiceAutowired1() {
+//		return helloServiceAutowired1;
+//	}
+//	@Autowired
+//	public void setHelloServiceAutowired1(HelloServiceAutowired1 helloServiceAutowired1) {
+//		this.helloServiceAutowired1 = helloServiceAutowired1;
+//	}
 
-
-	@Autowired
-	public void test(HelloServiceAutowired2 helloServiceAutowired2)
+	public void test()
 	{
-		System.out.println(helloServiceAutowired2);
-		System.out.println("test");
+//		System.out.println(helloServiceAutowired2);
+//		System.out.println("test");
 	}
 
 
@@ -46,13 +44,13 @@ public class HelloService implements IHelloService {
 	@Qualifier("helloServiceAutowired1")
 	private IHelloServiceAutowired helloServiceAutowired;
 
-	@Override
-	public String toString() {
-		return "HelloService{" +
-				"name='" + name + '\'' +
-				", age=" + age +
-				", height=" + height +
-				", helloServiceAutowired1=" + helloServiceAutowired1 +
-				'}';
-	}
+//	@Override
+//	public String toString() {
+//		return "HelloService{" +
+//				"name='" + name + '\'' +
+//				", age=" + age +
+//				", height=" + height +
+//				", helloServiceAutowired1=" + helloServiceAutowired1 +
+//				'}';
+//	}
 }

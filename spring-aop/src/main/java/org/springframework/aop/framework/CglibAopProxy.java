@@ -177,7 +177,7 @@ class CglibAopProxy implements AopProxy, Serializable {
 			// Validate the class, writing log messages as necessary.
 			validateClassIfNecessary(proxySuperClass, classLoader);
 
-			// Configure CGLIB Enhancer...
+			// 配置 CGLIB 代理
 			Enhancer enhancer = createEnhancer();
 			if (classLoader != null) {
 				enhancer.setClassLoader(classLoader);
@@ -188,20 +188,23 @@ class CglibAopProxy implements AopProxy, Serializable {
 			}
 			enhancer.setSuperclass(proxySuperClass);
 			enhancer.setInterfaces(AopProxyUtils.completeProxiedInterfaces(this.advised));
+			// 获取命名规则
 			enhancer.setNamingPolicy(SpringNamingPolicy.INSTANCE);
 			enhancer.setStrategy(new ClassLoaderAwareGeneratorStrategy(classLoader));
 
+			// 获取callbacks
 			Callback[] callbacks = getCallbacks(rootClass);
 			Class<?>[] types = new Class<?>[callbacks.length];
 			for (int x = 0; x < types.length; x++) {
 				types[x] = callbacks[x].getClass();
 			}
-			// fixedInterceptorMap only populated at this point, after getCallbacks call above
+
+			// 设置拦截器
 			enhancer.setCallbackFilter(new ProxyCallbackFilter(
 					this.advised.getConfigurationOnlyCopy(), this.fixedInterceptorMap, this.fixedInterceptorOffset));
 			enhancer.setCallbackTypes(types);
 
-			// Generate the proxy class and create a proxy instance.
+			// 创建enhancer代理
 			return createProxyClassAndInstance(enhancer, callbacks);
 		}
 		catch (CodeGenerationException | IllegalArgumentException ex) {
@@ -286,7 +289,7 @@ class CglibAopProxy implements AopProxy, Serializable {
 		boolean isFrozen = this.advised.isFrozen();
 		boolean isStatic = this.advised.getTargetSource().isStatic();
 
-		// Choose an "aop" interceptor (used for AOP calls).
+		// 设置aop拦截器
 		Callback aopInterceptor = new DynamicAdvisedInterceptor(this.advised);
 
 		// Choose a "straight to target" interceptor. (used for calls that are
@@ -307,6 +310,14 @@ class CglibAopProxy implements AopProxy, Serializable {
 		// unadvised calls to static targets that cannot return this).
 		Callback targetDispatcher = (isStatic ?
 				new StaticDispatcher(this.advised.getTargetSource().getTarget()) : new SerializableNoOp());
+
+		//  private static final int AOP_PROXY = 0;
+		//	private static final int INVOKE_TARGET = 1;
+		//	private static final int NO_OVERRIDE = 2;
+		//	private static final int DISPATCH_TARGET = 3;
+		//	private static final int DISPATCH_ADVISED = 4;
+		//	private static final int INVOKE_EQUALS = 5;
+		//	private static final int INVOKE_HASHCODE = 6;
 
 		Callback[] mainCallbacks = new Callback[] {
 				aopInterceptor,  // for normal advice
@@ -834,10 +845,12 @@ class CglibAopProxy implements AopProxy, Serializable {
 		 */
 		@Override
 		public int accept(Method method) {
+			// finalize 方法
 			if (AopUtils.isFinalizeMethod(method)) {
 				logger.trace("Found finalize() method - using NO_OVERRIDE");
 				return NO_OVERRIDE;
 			}
+			//
 			if (!this.advised.isOpaque() && method.getDeclaringClass().isInterface() &&
 					method.getDeclaringClass().isAssignableFrom(Advised.class)) {
 				if (logger.isTraceEnabled()) {
@@ -845,14 +858,14 @@ class CglibAopProxy implements AopProxy, Serializable {
 				}
 				return DISPATCH_ADVISED;
 			}
-			// We must always proxy equals, to direct calls to this.
+			// equals 方法
 			if (AopUtils.isEqualsMethod(method)) {
 				if (logger.isTraceEnabled()) {
 					logger.trace("Found 'equals' method: " + method);
 				}
 				return INVOKE_EQUALS;
 			}
-			// We must always calculate hashCode based on the proxy.
+			// hashcode
 			if (AopUtils.isHashCodeMethod(method)) {
 				if (logger.isTraceEnabled()) {
 					logger.trace("Found 'hashCode' method: " + method);
@@ -866,6 +879,9 @@ class CglibAopProxy implements AopProxy, Serializable {
 			boolean exposeProxy = this.advised.isExposeProxy();
 			boolean isStatic = this.advised.getTargetSource().isStatic();
 			boolean isFrozen = this.advised.isFrozen();
+			// 当前有通知，并且没有被冻结
+			// 这个冻结什么意思没搞明白
+			// 没钱就简简单单的理解为有通知
 			if (haveAdvice || !isFrozen) {
 				// If exposing the proxy, then AOP_PROXY must be used.
 				if (exposeProxy) {

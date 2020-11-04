@@ -137,6 +137,15 @@ public @interface EnableAspectJAutoProxy {
 	 * Off by default, i.e. no guarantees that {@code AopContext} access will work.
 	 * @since 4.3.1
 	 */
+	// if true wo can use `AopContext.currentProxy()` to get proxy
+	// such as
+	// 	@Before("PointCut()")
+	// 	public void before(JoinPoint joinPoint)
+	// 	{
+	//  		System.out.println(AopContext.currentProxy());
+	// 	}
+
+	// if false can not
 	boolean exposeProxy() default false;
 
 }
