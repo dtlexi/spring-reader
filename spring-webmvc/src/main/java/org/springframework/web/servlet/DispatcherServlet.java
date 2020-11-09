@@ -1010,10 +1010,14 @@ public class DispatcherServlet extends FrameworkServlet {
 			Exception dispatchException = null;
 
 			try {
+				// 检查文件上传，检查当前请求有没有附带文件
+				// 检查context-type 是否是文件类型
 				processedRequest = checkMultipart(request);
 				multipartRequestParsed = (processedRequest != request);
 
-				// Determine handler for the current request.
+				// 找到对应的handler
+				// handler 可以理解为controller
+				// getHandler 即为 getController
 				mappedHandler = getHandler(processedRequest);
 				if (mappedHandler == null) {
 					noHandlerFound(processedRequest, response);

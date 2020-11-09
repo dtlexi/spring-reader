@@ -109,6 +109,9 @@ import org.springframework.util.ReflectionUtils;
  * @see #onStartup(Set, ServletContext)
  * @see WebApplicationInitializer
  */
+
+// HandlesTypes web容器将在运行SpringServletContainerInitializer的onStartup方法时
+// 将其属性中的值传递到onStartup方法的第一个参数
 @HandlesTypes(WebApplicationInitializer.class)
 public class SpringServletContainerInitializer implements ServletContainerInitializer {
 
@@ -138,6 +141,7 @@ public class SpringServletContainerInitializer implements ServletContainerInitia
 	 * @see WebApplicationInitializer#onStartup(ServletContext)
 	 * @see AnnotationAwareOrderComparator
 	 */
+	// webAppInitializerClasses 是通过上面HandlesTypes注解注入的WebApplicationInitializer的实现类
 	@Override
 	public void onStartup(@Nullable Set<Class<?>> webAppInitializerClasses, ServletContext servletContext)
 			throws ServletException {
@@ -145,6 +149,9 @@ public class SpringServletContainerInitializer implements ServletContainerInitia
 		List<WebApplicationInitializer> initializers = new LinkedList<>();
 
 		if (webAppInitializerClasses != null) {
+
+			// 遍历所有webAppInitializerClasses
+			// 如果当前类不是接口，不是抽象类，实例化当前方列，并且添加到结合中去
 			for (Class<?> waiClass : webAppInitializerClasses) {
 				// Be defensive: Some servlet containers provide us with invalid classes,
 				// no matter what @HandlesTypes says...
@@ -166,6 +173,8 @@ public class SpringServletContainerInitializer implements ServletContainerInitia
 			return;
 		}
 
+		// 循环遍历initializers
+		// 调用WebApplicationInitializer的onStartup方法
 		servletContext.log(initializers.size() + " Spring WebApplicationInitializers detected on classpath");
 		AnnotationAwareOrderComparator.sort(initializers);
 		for (WebApplicationInitializer initializer : initializers) {

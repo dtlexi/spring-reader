@@ -202,6 +202,7 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 	 */
 	@Override
 	public void afterPropertiesSet() {
+		// afterPropertiesSet 将在spring bean 生命周期initializeBean方法中执行
 		initHandlerMethods();
 	}
 
@@ -212,8 +213,12 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 	 * @see #handlerMethodsInitialized
 	 */
 	protected void initHandlerMethods() {
+		// 获取spring中所有bean name
+		// 循环遍历
+		// getCandidateBeanNames 是通过bd获取beanname的
 		for (String beanName : getCandidateBeanNames()) {
 			if (!beanName.startsWith(SCOPED_TARGET_NAME_PREFIX)) {
+				// 处理
 				processCandidateBean(beanName);
 			}
 		}
@@ -254,7 +259,10 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 				logger.trace("Could not resolve type for bean '" + beanName + "'", ex);
 			}
 		}
+		// 判断当前bean type是否是controller
+		// 即是否加了@Controller或@RequestMapping
 		if (beanType != null && isHandler(beanType)) {
+			// 检测方法
 			detectHandlerMethods(beanName);
 		}
 	}
@@ -360,6 +368,7 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 	 */
 	@Override
 	protected HandlerMethod getHandlerInternal(HttpServletRequest request) throws Exception {
+		// 请求的url
 		String lookupPath = getUrlPathHelper().getLookupPathForRequest(request);
 		request.setAttribute(LOOKUP_PATH, lookupPath);
 		this.mappingRegistry.acquireReadLock();
@@ -384,6 +393,10 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 	@Nullable
 	protected HandlerMethod lookupHandlerMethod(String lookupPath, HttpServletRequest request) throws Exception {
 		List<Match> matches = new ArrayList<>();
+
+		// 这边是通过lookupPath从一个map中获取handler
+		// 当前类试了InitializingBean接口（详见Spring 生命周期）
+		// InitializingBean afterPropertiesSet
 		List<T> directPathMatches = this.mappingRegistry.getMappingsByUrl(lookupPath);
 		if (directPathMatches != null) {
 			addMatchingMappings(directPathMatches, matches, request);
