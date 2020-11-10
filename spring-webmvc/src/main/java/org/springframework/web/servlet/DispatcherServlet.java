@@ -1234,6 +1234,16 @@ public class DispatcherServlet extends FrameworkServlet {
 	 */
 	@Nullable
 	protected HandlerExecutionChain getHandler(HttpServletRequest request) throws Exception {
+		// 这边有多个handler mapping
+		// 这边是因为实现Controller的方式有多个
+		// 	1. @Controller
+		//	2. 实现一个类继承自Controller
+		// 	3. 实现一个类继承HttpRequestHandler
+
+		// 其中@Controller使用的是@RequestsMappingHandlerMapping
+		// 2,3俩种使用的是BeanNameUrlHandlerMapping
+
+		// 我们可以自己添加一个类实现HandlerMapping接口，并且添加到容器中
 		if (this.handlerMappings != null) {
 			for (HandlerMapping mapping : this.handlerMappings) {
 				HandlerExecutionChain handler = mapping.getHandler(request);

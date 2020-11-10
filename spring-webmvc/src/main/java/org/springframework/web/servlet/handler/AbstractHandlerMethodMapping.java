@@ -217,6 +217,7 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 		// 循环遍历
 		// getCandidateBeanNames 是通过bd获取beanname的
 		for (String beanName : getCandidateBeanNames()) {
+			// SCOPED_TARGET_NAME_PREFIX 这个目前不知道干什么用的
 			if (!beanName.startsWith(SCOPED_TARGET_NAME_PREFIX)) {
 				// 处理
 				processCandidateBean(beanName);
@@ -273,14 +274,17 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 	 * @see #getMappingForMethod
 	 */
 	protected void detectHandlerMethods(Object handler) {
+		// 拿到当前类型
 		Class<?> handlerType = (handler instanceof String ?
 				obtainApplicationContext().getType((String) handler) : handler.getClass());
 
 		if (handlerType != null) {
+			// 如果是cglib代理的类，拿到当前真实的类
 			Class<?> userType = ClassUtils.getUserClass(handlerType);
 			Map<Method, T> methods = MethodIntrospector.selectMethods(userType,
 					(MethodIntrospector.MetadataLookup<T>) method -> {
 						try {
+							// 封装一个request mapping对象
 							return getMappingForMethod(method, userType);
 						}
 						catch (Throwable ex) {
@@ -292,7 +296,11 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 				logger.trace(formatMappings(userType, methods));
 			}
 			methods.forEach((method, mapping) -> {
+				// 找到执行的方法
 				Method invocableMethod = AopUtils.selectInvocableMethod(method, userType);
+
+				// 注册handler
+				// mappingRegistry
 				registerHandlerMethod(handler, invocableMethod, mapping);
 			});
 		}
