@@ -102,17 +102,22 @@ public class ServletInvocableHandlerMethod extends InvocableHandlerMethod {
 	public void invokeAndHandle(ServletWebRequest webRequest, ModelAndViewContainer mavContainer,
 			Object... providedArgs) throws Exception {
 
+		// 执行handler
 		Object returnValue = invokeForRequest(webRequest, mavContainer, providedArgs);
+		// 设置返回状态。这边处理的是@ResponseStatus注解
 		setResponseStatus(webRequest);
 
 		if (returnValue == null) {
 			if (isRequestNotModified(webRequest) || getResponseStatus() != null || mavContainer.isRequestHandled()) {
 				disableContentCachingIfNecessary(webRequest);
+
+				// requestHandled== true 表示不需要进行视图跳转
 				mavContainer.setRequestHandled(true);
 				return;
 			}
 		}
 		else if (StringUtils.hasText(getResponseStatusReason())) {
+			// 如果有异常信息，不进行视图跳转
 			mavContainer.setRequestHandled(true);
 			return;
 		}
@@ -120,6 +125,7 @@ public class ServletInvocableHandlerMethod extends InvocableHandlerMethod {
 		mavContainer.setRequestHandled(false);
 		Assert.state(this.returnValueHandlers != null, "No return value handlers");
 		try {
+			// 视图裁决
 			this.returnValueHandlers.handleReturnValue(
 					returnValue, getReturnValueType(returnValue), mavContainer, webRequest);
 		}

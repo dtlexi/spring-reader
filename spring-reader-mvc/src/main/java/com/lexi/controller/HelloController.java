@@ -1,6 +1,7 @@
 package com.lexi.controller;
 
 
+import com.lexi.model.Person;
 import com.lexi.service.HelloService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -15,25 +16,28 @@ public class HelloController {
 
 	@ResponseBody
 	@RequestMapping("/hello.do")
-	public String sayHello()
+	public String sayHello(String name,int age)
 	{
-		System.out.println(helloService);
+		System.out.println(name);
+		System.out.println(age);
 		return "list";
 	}
 
-	@ResponseBody
 	@RequestMapping("/hello1.do")
 	public String sayHello1()
 	{
 		System.out.println(helloService);
-		return "list";
+		return "index";
+
 	}
 
 	@ResponseBody
 	@RequestMapping("/hello2.do")
-	public String sayHello2()
+	public Person sayHello2()
 	{
-		System.out.println(helloService);
-		return "list";
+		Person person=new Person();
+		person.setAge(12);
+		person.setName("张是哪");
+		return person;
 	}
 }

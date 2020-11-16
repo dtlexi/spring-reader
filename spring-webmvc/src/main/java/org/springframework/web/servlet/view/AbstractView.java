@@ -311,8 +311,14 @@ public abstract class AbstractView extends WebApplicationObjectSupport implement
 					(this.staticAttributes.isEmpty() ? "" : ", static attributes " + this.staticAttributes));
 		}
 
+		// 合并model
 		Map<String, Object> mergedModel = createMergedOutputModel(model, request, response);
+
+		// 设置Header or other
 		prepareResponse(request, response);
+
+		// 将model and view中的model设置到request中去
+		// request.dispatchServlet.forward("") 跳转视图
 		renderMergedOutputModel(mergedModel, getRequestToExpose(request), response);
 	}
 
@@ -323,6 +329,8 @@ public abstract class AbstractView extends WebApplicationObjectSupport implement
 	protected Map<String, Object> createMergedOutputModel(@Nullable Map<String, ?> model,
 			HttpServletRequest request, HttpServletResponse response) {
 
+		// @PathVariables?
+		// 调试看看
 		@SuppressWarnings("unchecked")
 		Map<String, Object> pathVars = (this.exposePathVariables ?
 				(Map<String, Object>) request.getAttribute(View.PATH_VARIABLES) : null);
