@@ -215,11 +215,12 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 	protected void initHandlerMethods() {
 		// 获取spring中所有bean name
 		// 循环遍历
-		// getCandidateBeanNames 是通过bd获取beanname的
+		// getCandidateBeanNames 是通过bd获取beanName的
 		for (String beanName : getCandidateBeanNames()) {
 			// SCOPED_TARGET_NAME_PREFIX 这个目前不知道干什么用的
 			if (!beanName.startsWith(SCOPED_TARGET_NAME_PREFIX)) {
 				// 处理
+				// 这边就是处理@Controller注解
 				processCandidateBean(beanName);
 			}
 		}
@@ -281,6 +282,8 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 		if (handlerType != null) {
 			// 如果是cglib代理的类，拿到当前真实的类
 			Class<?> userType = ClassUtils.getUserClass(handlerType);
+			// 找到@RequestMapping注解的方法，
+			// 包含实现的父接口中添加@RequestMapping注解的方法
 			Map<Method, T> methods = MethodIntrospector.selectMethods(userType,
 					(MethodIntrospector.MetadataLookup<T>) method -> {
 						try {
@@ -620,10 +623,13 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 			}
 			this.readWriteLock.writeLock().lock();
 			try {
+				// HandlerMethod 封装了当前bean,beanFactory,method..等信息
 				HandlerMethod handlerMethod = createHandlerMethod(handler, method);
 				validateMethodMapping(handlerMethod, mapping);
+				// 添加map->handler&method映射
 				this.mappingLookup.put(mapping, handlerMethod);
 
+				// 添加url->map映射
 				List<String> directUrls = getDirectUrls(mapping);
 				for (String url : directUrls) {
 					this.urlLookup.add(url, mapping);
@@ -639,7 +645,8 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 				if (corsConfig != null) {
 					this.corsLookup.put(handlerMethod, corsConfig);
 				}
-
+				// 添加map->MappingRegistration映射
+				// MappingRegistration映射包含map,handlerMethod,url,name等所有信息
 				this.registry.put(mapping, new MappingRegistration<>(mapping, handlerMethod, directUrls, name));
 			}
 			finally {

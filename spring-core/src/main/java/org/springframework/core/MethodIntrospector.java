@@ -58,15 +58,21 @@ public final class MethodIntrospector {
 	public static <T> Map<Method, T> selectMethods(Class<?> targetType, final MetadataLookup<T> metadataLookup) {
 		final Map<Method, T> methodMap = new LinkedHashMap<>();
 		Set<Class<?>> handlerTypes = new LinkedHashSet<>();
+		// 具体的类型，这边指的是当前控制器类
 		Class<?> specificHandlerType = null;
 
+		// 当前类不是代理对象
 		if (!Proxy.isProxyClass(targetType)) {
+			// 获取真实的对象
+			// why?
 			specificHandlerType = ClassUtils.getUserClass(targetType);
 			handlerTypes.add(specificHandlerType);
 		}
+		// 获取当前类的所有实现的接口
 		handlerTypes.addAll(ClassUtils.getAllInterfacesForClassAsSet(targetType));
 
 		for (Class<?> currentHandlerType : handlerTypes) {
+
 			final Class<?> targetClass = (specificHandlerType != null ? specificHandlerType : currentHandlerType);
 
 			ReflectionUtils.doWithMethods(currentHandlerType, method -> {

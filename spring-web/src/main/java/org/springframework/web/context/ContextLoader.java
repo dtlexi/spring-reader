@@ -276,8 +276,10 @@ public class ContextLoader {
 			// Store context in local instance variable, to guarantee that
 			// it is available on ServletContext shutdown.
 			if (this.context == null) {
+				// 通过反射创建XMLWebApplicationContext
 				this.context = createWebApplicationContext(servletContext);
 			}
+
 			if (this.context instanceof ConfigurableWebApplicationContext) {
 				ConfigurableWebApplicationContext cwac = (ConfigurableWebApplicationContext) this.context;
 				if (!cwac.isActive()) {
@@ -289,9 +291,12 @@ public class ContextLoader {
 						ApplicationContext parent = loadParentContext(servletContext);
 						cwac.setParent(parent);
 					}
+					// 上面仅仅只是实例化了一个context对象
+					// 这边设置了xml配置文件，refresh()
 					configureAndRefreshWebApplicationContext(cwac, servletContext);
 				}
 			}
+			// 将当前对象context添加到servletContext中去
 			servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, this.context);
 
 			ClassLoader ccl = Thread.currentThread().getContextClassLoader();
@@ -329,11 +334,15 @@ public class ContextLoader {
 	 * @see ConfigurableWebApplicationContext
 	 */
 	protected WebApplicationContext createWebApplicationContext(ServletContext sc) {
+		// 获取context class
+		// 如果在配置文件中指定了，使用指定的
+		// 如果没指定，使用XmlWebApplicationContext
 		Class<?> contextClass = determineContextClass(sc);
 		if (!ConfigurableWebApplicationContext.class.isAssignableFrom(contextClass)) {
 			throw new ApplicationContextException("Custom context class [" + contextClass.getName() +
 					"] is not of type [" + ConfigurableWebApplicationContext.class.getName() + "]");
 		}
+		// 调用反射实例化对象
 		return (ConfigurableWebApplicationContext) BeanUtils.instantiateClass(contextClass);
 	}
 
@@ -384,8 +393,10 @@ public class ContextLoader {
 		}
 
 		wac.setServletContext(sc);
+		// 获取contextConfigLocation
 		String configLocationParam = sc.getInitParameter(CONFIG_LOCATION_PARAM);
 		if (configLocationParam != null) {
+			// 设置spring-mvc.xml
 			wac.setConfigLocation(configLocationParam);
 		}
 
@@ -398,6 +409,7 @@ public class ContextLoader {
 		}
 
 		customizeContext(sc, wac);
+		// 调用context.refresh()方法
 		wac.refresh();
 	}
 

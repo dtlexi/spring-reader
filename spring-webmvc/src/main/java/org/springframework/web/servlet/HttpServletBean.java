@@ -147,11 +147,14 @@ public abstract class HttpServletBean extends HttpServlet implements Environment
 	 */
 	@Override
 	public final void init() throws ServletException {
-		System.out.println("init");
+		System.out.println("init HttpServletBean");
 		// Set bean properties from init parameters.
+
+		// 从初始化参数设置bean属性。例如init-param的contextConfigLocation  classpath*:spring-mvc.xml
 		PropertyValues pvs = new ServletConfigPropertyValues(getServletConfig(), this.requiredProperties);
 		if (!pvs.isEmpty()) {
 			try {
+				// 将DispatcherServlet转化成Spring里面的Bean，
 				BeanWrapper bw = PropertyAccessorFactory.forBeanPropertyAccess(this);
 				ResourceLoader resourceLoader = new ServletContextResourceLoader(getServletContext());
 				bw.registerCustomEditor(Resource.class, new ResourceEditor(resourceLoader, getEnvironment()));
@@ -167,6 +170,9 @@ public abstract class HttpServletBean extends HttpServlet implements Environment
 		}
 
 		// Let subclasses do whatever initialization they like.
+		// 模板方法，子类可以去自定义
+		// FrameworkServlet 中实现了该方法
+		// 用来创建webApplicationContext（父子容器中的子容器）
 		initServletBean();
 	}
 

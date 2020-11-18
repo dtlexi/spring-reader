@@ -111,6 +111,8 @@ public abstract class WebApplicationContextUtils {
 	public static WebApplicationContext getWebApplicationContext(ServletContext sc, String attrName) {
 		Assert.notNull(sc, "ServletContext must not be null");
 		Object attr = sc.getAttribute(attrName);
+		System.out.println(attrName);
+		System.out.println(attr);
 		if (attr == null) {
 			return null;
 		}

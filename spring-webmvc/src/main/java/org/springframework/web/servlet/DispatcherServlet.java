@@ -500,14 +500,23 @@ public class DispatcherServlet extends FrameworkServlet {
 	 * <p>May be overridden in subclasses in order to initialize further strategy objects.
 	 */
 	protected void initStrategies(ApplicationContext context) {
+		// 文件上传解析器
 		initMultipartResolver(context);
+		// 本地化解析器
 		initLocaleResolver(context);
+		// 主题解析器
 		initThemeResolver(context);
+		// 处理器映射器(url和Controller方法的映射)
 		initHandlerMappings(context);
+		// 处理器适配器(实际执行Controller方法)
 		initHandlerAdapters(context);
+		// 处理器异常解析器
 		initHandlerExceptionResolvers(context);
+		// RequestToViewName解析器
 		initRequestToViewNameTranslator(context);
+		// 视图解析器(视图的匹配和渲染)
 		initViewResolvers(context);
+		// FlashMap管理者
 		initFlashMapManager(context);
 	}
 
@@ -1041,6 +1050,7 @@ public class DispatcherServlet extends FrameworkServlet {
 					}
 				}
 
+				// 执行前置拦截器
 				if (!mappedHandler.applyPreHandle(processedRequest, response)) {
 					return;
 				}
@@ -1058,6 +1068,7 @@ public class DispatcherServlet extends FrameworkServlet {
 				// 如果当前ModelAndView没有视图，设置默认视图
 				applyDefaultViewName(processedRequest, mv);
 
+				// 执行后置拦截器
 				mappedHandler.applyPostHandle(processedRequest, response, mv);
 			}
 			catch (Exception ex) {

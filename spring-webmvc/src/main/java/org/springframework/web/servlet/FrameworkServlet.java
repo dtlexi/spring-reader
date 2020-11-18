@@ -527,7 +527,9 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 		long startTime = System.currentTimeMillis();
 
 		try {
+			// 实例化子容器
 			this.webApplicationContext = initWebApplicationContext();
+			// 空方法，暂时没实现
 			initFrameworkServlet();
 		}
 		catch (ServletException | RuntimeException ex) {
@@ -558,10 +560,13 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 	 * @see #setContextConfigLocation
 	 */
 	protected WebApplicationContext initWebApplicationContext() {
+		// 获取父容器，即在ContextLoaderListener#initServletContext()创建的WebApplicationContext
 		WebApplicationContext rootContext =
 				WebApplicationContextUtils.getWebApplicationContext(getServletContext());
+		// 这边是子容器
 		WebApplicationContext wac = null;
 
+		// 当前webApplicationContext不为空
 		if (this.webApplicationContext != null) {
 			// A context instance was injected at construction time -> use it
 			wac = this.webApplicationContext;
@@ -570,11 +575,14 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 				if (!cwac.isActive()) {
 					// The context has not yet been refreshed -> provide services such as
 					// setting the parent context, setting the application context id, etc
+
+					// 设置父容器
 					if (cwac.getParent() == null) {
 						// The context instance was injected without an explicit parent -> set
 						// the root application context (if any; may be null) as the parent
 						cwac.setParent(rootContext);
 					}
+					// 配置 和 刷新
 					configureAndRefreshWebApplicationContext(cwac);
 				}
 			}
@@ -584,13 +592,20 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 			// has been registered in the servlet context. If one exists, it is assumed
 			// that the parent context (if any) has already been set and that the
 			// user has performed any initialization such as setting the context id
+
+			// 根据init-param配置的属性名称从ServletContext查找SpringMVC的servlet子上下文
 			wac = findWebApplicationContext();
 		}
 		if (wac == null) {
 			// No context instance is defined for this servlet -> create a local one
+
+			// 创建WebApplicationContext
 			wac = createWebApplicationContext(rootContext);
 		}
 
+		// 调用onRefresh方法实例化HandlerMappings，HandlerAdapters
+		// 其实通过代码调试可知，spring mvc并没有在此处调用onRefresh方法
+		// 而是在创建WebApplicationContext时添加了个Listener，此Listener将在refresh#finishRefresh方法中被执行
 		if (!this.refreshEventReceived) {
 			// Either the context is not a ConfigurableApplicationContext with refresh
 			// support or the context injected at construction time had already been
@@ -602,6 +617,8 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 
 		if (this.publishContext) {
 			// Publish the context as a servlet context attribute.
+
+			// 将子容器设置到HttpServletContext中去
 			String attrName = getServletContextAttributeName();
 			getServletContext().setAttribute(attrName, wac);
 		}
@@ -656,15 +673,21 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 					"': custom WebApplicationContext class [" + contextClass.getName() +
 					"] is not of type ConfigurableWebApplicationContext");
 		}
+		// 通过反射创建对象
 		ConfigurableWebApplicationContext wac =
 				(ConfigurableWebApplicationContext) BeanUtils.instantiateClass(contextClass);
 
+		// 设置运行环境
 		wac.setEnvironment(getEnvironment());
+		// 设置父容器
 		wac.setParent(parent);
+		// 设置xml路径
 		String configLocation = getContextConfigLocation();
 		if (configLocation != null) {
 			wac.setConfigLocation(configLocation);
 		}
+
+		// 设置和初始化
 		configureAndRefreshWebApplicationContext(wac);
 
 		return wac;
@@ -687,6 +710,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 		wac.setServletContext(getServletContext());
 		wac.setServletConfig(getServletConfig());
 		wac.setNamespace(getNamespace());
+		// 设置SourceFilteringListener 将在webApplicationContext#refresh#finishRefresh调用
 		wac.addApplicationListener(new SourceFilteringListener(wac, new ContextRefreshListener()));
 
 		// The wac environment's #initPropertySources will be called in any case when the context

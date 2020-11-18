@@ -3,6 +3,7 @@ package com.lexi.controller;
 
 import com.lexi.model.Person;
 import com.lexi.service.HelloService;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -10,7 +11,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.DispatcherServlet;
 
 @Controller
-public class HelloController {
+public class HelloController implements InitializingBean,BaseController {
 	@Autowired
 	HelloService helloService;
 
@@ -39,5 +40,15 @@ public class HelloController {
 		person.setAge(12);
 		person.setName("张是哪");
 		return person;
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		System.out.println("12");
+	}
+
+	@Override
+	public String test() {
+		return  "test";
 	}
 }
