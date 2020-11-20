@@ -6,6 +6,7 @@ import com.lexi.service.HelloService;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.DispatcherServlet;
@@ -26,17 +27,18 @@ public class HelloController implements InitializingBean,BaseController {
 		return "list";
 	}
 
-	@RequestMapping("/hello1.do")
-	public String sayHello1()
+	@RequestMapping("/hello/{id}.do")
+	public String sayHello1(@PathVariable("id") int id)
 	{
 		System.out.println(helloService);
+		System.out.println(id);
 		return "index";
 
 	}
 
 	@ResponseBody
-	@RequestMapping("/hello2.do")
-	public Person sayHello2()
+	@RequestMapping("/hello/{name}.do")
+	public Person sayHello2(@PathVariable("name") String name)
 	{
 		Person person=new Person();
 		person.setAge(12);

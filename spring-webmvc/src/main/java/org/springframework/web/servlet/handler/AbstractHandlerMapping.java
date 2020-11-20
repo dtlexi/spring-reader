@@ -392,19 +392,26 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 	@Override
 	@Nullable
 	public final HandlerExecutionChain getHandler(HttpServletRequest request) throws Exception {
+		// 获取handler
+		// 这是一个模板方法， 在子类中实现
 		Object handler = getHandlerInternal(request);
 		if (handler == null) {
+			// 获取默认handler
 			handler = getDefaultHandler();
 		}
 		if (handler == null) {
 			return null;
 		}
 		// Bean name or resolved handler?
+		// 如果handler是String类型
+		// getBean handler
 		if (handler instanceof String) {
 			String handlerName = (String) handler;
 			handler = obtainApplicationContext().getBean(handlerName);
 		}
 
+		// 1. 封装handler
+		// 2. 添加拦截器
 		HandlerExecutionChain executionChain = getHandlerExecutionChain(handler, request);
 
 		if (logger.isTraceEnabled()) {
@@ -414,6 +421,7 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 			logger.debug("Mapped to " + executionChain.getHandler());
 		}
 
+		// 跨域？
 		if (hasCorsConfigurationSource(handler) || CorsUtils.isPreFlightRequest(request)) {
 			CorsConfiguration config = (this.corsConfigurationSource != null ? this.corsConfigurationSource.getCorsConfiguration(request) : null);
 			CorsConfiguration handlerConfig = getCorsConfiguration(handler, request);
