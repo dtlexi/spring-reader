@@ -385,11 +385,7 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 		// 锁
 		this.mappingRegistry.acquireReadLock();
 		try {
-<<<<<<< HEAD
-			// handler
-=======
 			// 获取handler method
->>>>>>> ed24d35ca7655504174286a7c6c24b81a9f499f6
 			HandlerMethod handlerMethod = lookupHandlerMethod(lookupPath, request);
 			// 确保对呀的bean已经被解析
 			return (handlerMethod != null ? handlerMethod.createWithResolvedBean() : null);
