@@ -33,4 +33,20 @@ public class TestMethodHandlerController {
 		System.out.println(index);
 		return  index.toString();
 	}
+
+	@ResponseBody
+	@RequestMapping(value = "/header.do",headers = {"content-type"})
+	public String testWithHeader()
+	{
+		System.out.println("header");
+		return "header";
+	}
+
+	@ResponseBody
+	@RequestMapping(value = "/header.do",headers = {"content-type","content-length"})
+	public String testWithHeader1()
+	{
+		System.out.println("header");
+		return "header1";
+	}
 }

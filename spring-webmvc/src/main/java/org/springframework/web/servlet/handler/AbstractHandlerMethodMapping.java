@@ -428,6 +428,7 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 			if (matches.size() > 1) {
 				// 如果数量 > 1
 				// 排序
+				// RequestMappingInfo#compareTo
 				Comparator<Match> comparator = new MatchComparator(getMappingComparator(request));
 				matches.sort(comparator);
 				// 重新获取第一个匹配的赋值给bestMatch
