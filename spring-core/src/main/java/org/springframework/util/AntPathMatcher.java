@@ -757,6 +757,7 @@ public class AntPathMatcher implements PathMatcher {
 			PatternInfo info1 = new PatternInfo(pattern1);
 			PatternInfo info2 = new PatternInfo(pattern2);
 
+			// pattern1==null || pattern1=="/**"
 			if (info1.isLeastSpecific() && info2.isLeastSpecific()) {
 				return 0;
 			}
@@ -789,6 +790,7 @@ public class AntPathMatcher implements PathMatcher {
 				return -1;
 			}
 
+			// this.uriVars + this.singleWildcards + (2 * this.doubleWildcards);
 			if (info1.getTotalCount() != info2.getTotalCount()) {
 				return info1.getTotalCount() - info2.getTotalCount();
 			}
@@ -797,6 +799,7 @@ public class AntPathMatcher implements PathMatcher {
 				return info2.getLength() - info1.getLength();
 			}
 
+			// * 数量
 			if (info1.getSingleWildcards() < info2.getSingleWildcards()) {
 				return -1;
 			}
@@ -804,6 +807,7 @@ public class AntPathMatcher implements PathMatcher {
 				return 1;
 			}
 
+			// {UriVars} 数量
 			if (info1.getUriVars() < info2.getUriVars()) {
 				return -1;
 			}

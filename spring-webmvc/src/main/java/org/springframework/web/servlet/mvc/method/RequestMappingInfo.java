@@ -27,6 +27,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.PathMatcher;
 import org.springframework.util.StringUtils;
 import org.springframework.web.accept.ContentNegotiationManager;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.mvc.condition.ConsumesRequestCondition;
 import org.springframework.web.servlet.mvc.condition.HeadersRequestCondition;
@@ -239,10 +240,13 @@ public final class RequestMappingInfo implements RequestCondition<RequestMapping
 	@Override
 	@Nullable
 	public RequestMappingInfo getMatchingCondition(HttpServletRequest request) {
+		// 这边是匹配http请求方式的，即，get,post,delete,put...
+		//@RequestMapping(value = "/method.do",method = RequestMethod.GET)
 		RequestMethodsRequestCondition methods = this.methodsCondition.getMatchingCondition(request);
 		if (methods == null) {
 			return null;
 		}
+
 		ParamsRequestCondition params = this.paramsCondition.getMatchingCondition(request);
 		if (params == null) {
 			return null;
@@ -259,6 +263,9 @@ public final class RequestMappingInfo implements RequestCondition<RequestMapping
 		if (produces == null) {
 			return null;
 		}
+
+		// 路径匹配
+		// @RequestMapping("/pattern/{index}.do")
 		PatternsRequestCondition patterns = this.patternsCondition.getMatchingCondition(request);
 		if (patterns == null) {
 			return null;
@@ -281,17 +288,23 @@ public final class RequestMappingInfo implements RequestCondition<RequestMapping
 	@Override
 	public int compareTo(RequestMappingInfo other, HttpServletRequest request) {
 		int result;
-		// Automatic vs explicit HTTP HEAD mapping
+
+		// 看下面
 		if (HttpMethod.HEAD.matches(request.getMethod())) {
 			result = this.methodsCondition.compareTo(other.getMethodsCondition(), request);
 			if (result != 0) {
 				return result;
 			}
 		}
+		// patterns compare
+		// 尽量的精准匹配
+		// 尽量不是 /**
+		// /** /* {} 数量尽量的少
 		result = this.patternsCondition.compareTo(other.getPatternsCondition(), request);
 		if (result != 0) {
 			return result;
 		}
+
 		result = this.paramsCondition.compareTo(other.getParamsCondition(), request);
 		if (result != 0) {
 			return result;
@@ -308,7 +321,12 @@ public final class RequestMappingInfo implements RequestCondition<RequestMapping
 		if (result != 0) {
 			return result;
 		}
-		// Implicit (no method) vs explicit HTTP method mappings
+
+		// 匹配methods 排序
+		// this => @RequestMapping(value = "/hello/{id}.do")
+		// other => @RequestMapping(value = "/hello/{name}.do",method = {RequestMethod.GET,RequestMethod.HEAD})
+		// 此时this.methodsCondition=[],other.methodsCondition=[get]
+		// 此时选的是 other => @RequestMapping(value = "/hello/{name}.do",method = {RequestMethod.GET,RequestMethod.HEAD})
 		result = this.methodsCondition.compareTo(other.getMethodsCondition(), request);
 		if (result != 0) {
 			return result;
