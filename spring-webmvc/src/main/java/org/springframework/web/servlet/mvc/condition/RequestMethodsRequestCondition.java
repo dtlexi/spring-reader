@@ -186,10 +186,12 @@ public final class RequestMethodsRequestCondition extends AbstractRequestConditi
 	 */
 	@Override
 	public int compareTo(RequestMethodsRequestCondition other, HttpServletRequest request) {
+		// 这一段没看懂
 		if (other.methods.size() != this.methods.size()) {
 			return other.methods.size() - this.methods.size();
 		}
 		else if (this.methods.size() == 1) {
+			// Head>Get
 			if (this.methods.contains(RequestMethod.HEAD) && other.methods.contains(RequestMethod.GET)) {
 				return -1;
 			}

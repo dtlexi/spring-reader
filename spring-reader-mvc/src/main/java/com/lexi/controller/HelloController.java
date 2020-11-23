@@ -6,28 +6,30 @@ import com.lexi.service.HelloService;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 @Controller
-@EnableWebMvc
 public class HelloController implements InitializingBean,BaseController {
 	@Autowired
 	HelloService helloService;
 
 	@ResponseBody
-	@RequestMapping("/hello.do")
-	public String sayHello(String name,int age)
+	@RequestMapping(value = "/hello.do",method = {RequestMethod.GET})
+	public String sayHello()
 	{
-		System.out.println(name);
-		System.out.println(age);
 		return "list";
 	}
 
-	@RequestMapping("/hello/{id}.do")
+	@ResponseBody
+	@RequestMapping(value = "/hello.do")
+	public String sayHello1()
+	{
+		return "list1";
+	}
+
+	@RequestMapping(value = "/hello/{id}.do",method = {RequestMethod.GET,RequestMethod.POST,RequestMethod.HEAD})
 	public String sayHello1(@PathVariable("id") int id)
 	{
 		System.out.println(helloService);
@@ -37,7 +39,7 @@ public class HelloController implements InitializingBean,BaseController {
 	}
 
 	@ResponseBody
-	@RequestMapping("/hello/{name}.do")
+	@RequestMapping(value = "/hello/{name}.do",method = {RequestMethod.GET,RequestMethod.HEAD})
 	public Person sayHello2(@PathVariable("name") String name)
 	{
 		Person person=new Person();

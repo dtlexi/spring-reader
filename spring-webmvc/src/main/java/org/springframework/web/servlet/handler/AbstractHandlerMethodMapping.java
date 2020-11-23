@@ -385,7 +385,9 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 		// 锁
 		this.mappingRegistry.acquireReadLock();
 		try {
+			// 获取handler method
 			HandlerMethod handlerMethod = lookupHandlerMethod(lookupPath, request);
+			// 确保对呀的bean已经被解析
 			return (handlerMethod != null ? handlerMethod.createWithResolvedBean() : null);
 		}
 		finally {
@@ -407,22 +409,28 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 		List<Match> matches = new ArrayList<>();
 
 		// 这边是通过lookupPath从一个map中获取handler
-		// 当前类试了InitializingBean接口（详见Spring 生命周期）
-		// InitializingBean afterPropertiesSet
 		List<T> directPathMatches = this.mappingRegistry.getMappingsByUrl(lookupPath);
 		if (directPathMatches != null) {
 			addMatchingMappings(directPathMatches, matches, request);
 		}
 		if (matches.isEmpty()) {
-			// No choice but to go through all mappings...
+			// 如果没有找到直接匹配
+			// 循环遍历所有的RequestMappingInfo,找到符合条件的，添加到集合中去
+			// 这边的符合条件，指的时@RequestMapping注解中那些条件
+			// header,params,methods...
+			// 注意此时返回的是一个权限的RequestMappingInfo
 			addMatchingMappings(this.mappingRegistry.getMappings().keySet(), matches, request);
 		}
 
 		if (!matches.isEmpty()) {
+			// 获取第一个匹配的赋值给bestMatch
 			Match bestMatch = matches.get(0);
 			if (matches.size() > 1) {
+				// 如果数量 > 1
+				// 排序
 				Comparator<Match> comparator = new MatchComparator(getMappingComparator(request));
 				matches.sort(comparator);
+				// 重新获取第一个匹配的赋值给bestMatch
 				bestMatch = matches.get(0);
 				if (logger.isTraceEnabled()) {
 					logger.trace(matches.size() + " matching mappings: " + matches);
@@ -431,6 +439,8 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 					return PREFLIGHT_AMBIGUOUS_MATCH;
 				}
 				Match secondBestMatch = matches.get(1);
+				// 第一个match和第二个match比较，如果相等，报错
+				// 即当前找到了俩个最优解,此时报错
 				if (comparator.compare(bestMatch, secondBestMatch) == 0) {
 					Method m1 = bestMatch.handlerMethod.getMethod();
 					Method m2 = secondBestMatch.handlerMethod.getMethod();
