@@ -120,7 +120,9 @@ public class HandlerMethodArgumentResolverComposite implements HandlerMethodArgu
 		 * 此时可以使用@Autowired注解解决问题
 		 *
 		 * 这边比较常用的ArgumentResolver如下
+		 *
 		 * 	1. RequestParamMethodArgumentResolver
+		 *
 		 * 		tips:
 		 * 			this.argumentResolvers容器中有俩个RequestParamMethodArgumentResolver的解析器
 		 * 			1. index=0:第一个index=0，即第一个，此时useDefaultResolution==false，表示不解析没有添加@RequestParam注解普通类型参数
@@ -138,6 +140,7 @@ public class HandlerMethodArgumentResolverComposite implements HandlerMethodArgu
 		 *
 		 *
 		 * 	2. RequestParamMapMethodArgumentResolver
+		 *
 		 * 		support:
 		 * 			1. 加了@RequestParam的map参数，并且没有指定name
 		 *
@@ -148,6 +151,7 @@ public class HandlerMethodArgumentResolverComposite implements HandlerMethodArgu
 		 *
 		 *
 		 * 	3. PathVariableMethodArgumentResolver
+		 *
 		 * 		support:
 		 * 			1. 添加了@PathVariable的非Map类型参数
 		 * 			2. 添加了@PathVariable的Map，并且此时指定了@RPathVariable的name属性
@@ -159,24 +163,23 @@ public class HandlerMethodArgumentResolverComposite implements HandlerMethodArgu
 		 *
 		 * 	4. PathVariableMapMethodArgumentResolver
 		 * 	5. ModelAttributeMethodProcessor
+		 *
 		 * 		Tips:
 		 * 			this.argumentResolvers容器中有俩个ModelAttributeMethodProcessor的解析器,
-		 * 			1. index=6,此时annotationNotRequired属性为false，表示不解析其他非常规参数
-		 * 			2. index=-1.表示最后一个，	此时annotationNotRequired属性为true，表示解析其他非常规参数
+		 * 			1. index=6,此时annotationNotRequired属性为false，表示不解析其他!Simple参数
+		 * 			2. index=-1.表示最后一个，	此时annotationNotRequired属性为true，表示解析Simple参数
 		 *
 		 * 		support:
 		 * 			1. 添加了@ModelAttribute注解的参数
 		 * 			2. 非简单参数（不是int,Integer,float...并且不是这些类型的数组）（this.annotationNotRequired==true）
 		 *
+		 * 		resolve idea:
+		 * 			1. 反射创建对象
+		 * 			2.
 		 * 	6. RequestResponseBodyMethodProcessor
 		 * 	7. MapMethodProcessor
 		 */
 
-
-		// 这边一般默认使用
-		// this.argumentResolvers有2个RequestParamMethodArgumentResolver，
-		// 		其中第一个useDefaultResolution==false，表是当前值匹配加了@RequestParam注解的参数
-		//		另外一个useDefaultResolution==true，表示当前匹配基本数据类型的参数
 		HandlerMethodArgumentResolver resolver = getArgumentResolver(parameter);
 		if (resolver == null) {
 			throw new IllegalArgumentException("Unsupported parameter type [" +

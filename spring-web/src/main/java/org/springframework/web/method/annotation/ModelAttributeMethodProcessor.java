@@ -135,8 +135,8 @@ public class ModelAttributeMethodProcessor implements HandlerMethodArgumentResol
 			attribute = mavContainer.getModel().get(name);
 		}
 		else {
-			// Create attribute instance
 			try {
+				// 反射调用默认构造方法创建对象
 				attribute = createAttribute(name, parameter, binderFactory, webRequest);
 			}
 			catch (BindException ex) {
@@ -158,6 +158,7 @@ public class ModelAttributeMethodProcessor implements HandlerMethodArgumentResol
 			WebDataBinder binder = binderFactory.createBinder(webRequest, attribute, name);
 			if (binder.getTarget() != null) {
 				if (!mavContainer.isBindingDisabled(name)) {
+					// 属性赋值
 					bindRequestParameters(binder, webRequest);
 				}
 				validateIfApplicable(binder, parameter);

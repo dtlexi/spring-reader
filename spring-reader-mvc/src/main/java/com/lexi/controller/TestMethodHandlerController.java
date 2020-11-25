@@ -67,7 +67,7 @@ public class TestMethodHandlerController {
 
 	@ResponseBody
 	@RequestMapping(value = "/params4.do")
-	public String testWithObjectParams4(@RequestParam(required = false) Person person)
+	public String testWithObjectParams4(@ModelAttribute Person person)
 	{
 		return "testWithObjectParams";
 	}
