@@ -1,10 +1,11 @@
 package com.lexi.controller;
 
+import com.lexi.model.Person;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/test")
@@ -48,5 +49,47 @@ public class TestMethodHandlerController {
 	{
 		System.out.println("header");
 		return "header1";
+	}
+
+	@ResponseBody
+	@RequestMapping(value = "/params.do")
+	public String testWithParams(String name,int age)
+	{
+		return "params";
+	}
+
+	@ResponseBody
+	@RequestMapping(value = "/params1.do")
+	public String testWithObjectParams(Person person)
+	{
+		return "testWithObjectParams";
+	}
+
+	@ResponseBody
+	@RequestMapping(value = "/params4.do")
+	public String testWithObjectParams4(@RequestParam(required = false) Person person)
+	{
+		return "testWithObjectParams";
+	}
+
+	@ResponseBody
+	@RequestMapping(value = "/params2.do")
+	public String testWithMapParams(@RequestParam(required = false) Map<String,String> map)
+	{
+		return "testWithMapParams";
+	}
+
+	@ResponseBody
+	@RequestMapping(value = "/params3.do")
+	public String testWithMapParams3(Map<String,String> map)
+	{
+		return "testWithMapParams";
+	}
+
+	@ResponseBody
+	@RequestMapping(value = "/params5/{name}/{age}.do")
+	public String testWithParams5(@PathVariable String name,@PathVariable int age)
+	{
+		return "params";
 	}
 }

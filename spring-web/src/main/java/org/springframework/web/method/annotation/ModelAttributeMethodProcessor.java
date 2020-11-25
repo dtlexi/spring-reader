@@ -127,6 +127,7 @@ public class ModelAttributeMethodProcessor implements HandlerMethodArgumentResol
 			mavContainer.setBinding(name, ann.binding());
 		}
 
+		// 参数
 		Object attribute = null;
 		BindingResult bindingResult = null;
 

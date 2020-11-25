@@ -1105,6 +1105,9 @@ public class DispatcherServlet extends FrameworkServlet {
 		}
 	}
 
+
+
+
 	/**
 	 * Do we need view name translation?
 	 */

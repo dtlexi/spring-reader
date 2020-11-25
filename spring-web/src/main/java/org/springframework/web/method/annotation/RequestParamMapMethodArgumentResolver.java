@@ -126,8 +126,10 @@ public class RequestParamMapMethodArgumentResolver implements HandlerMethodArgum
 				return new LinkedHashMap<>(0);
 			}
 			else {
+				// 用户传递的参数
 				Map<String, String[]> parameterMap = webRequest.getParameterMap();
 				Map<String, String> result = new LinkedHashMap<>(parameterMap.size());
+				// 一次将parameterMap中的k-v添加到result中去
 				parameterMap.forEach((key, values) -> {
 					if (values.length > 0) {
 						result.put(key, values[0]);

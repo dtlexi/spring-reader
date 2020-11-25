@@ -134,11 +134,16 @@ public class HandlerExecutionChain {
 	 * that this interceptor has already dealt with the response itself.
 	 */
 	boolean applyPreHandle(HttpServletRequest request, HttpServletResponse response) throws Exception {
+		// 获取当前handlerChain中的拦截器
 		HandlerInterceptor[] interceptors = getInterceptors();
 		if (!ObjectUtils.isEmpty(interceptors)) {
+			// 循环遍历
 			for (int i = 0; i < interceptors.length; i++) {
 				HandlerInterceptor interceptor = interceptors[i];
+				// 执行前置拦截器
 				if (!interceptor.preHandle(request, response, this.handler)) {
+					// 如果前置拦截器拦截了该handler
+					// 执行afterCompletion
 					triggerAfterCompletion(request, response, null);
 					return false;
 				}
@@ -153,11 +158,12 @@ public class HandlerExecutionChain {
 	 */
 	void applyPostHandle(HttpServletRequest request, HttpServletResponse response, @Nullable ModelAndView mv)
 			throws Exception {
-
+		// 获取当前拦截器
 		HandlerInterceptor[] interceptors = getInterceptors();
 		if (!ObjectUtils.isEmpty(interceptors)) {
 			for (int i = interceptors.length - 1; i >= 0; i--) {
 				HandlerInterceptor interceptor = interceptors[i];
+				// 执行拦截器
 				interceptor.postHandle(request, response, this.handler, mv);
 			}
 		}

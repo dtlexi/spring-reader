@@ -240,17 +240,22 @@ public final class RequestMappingInfo implements RequestCondition<RequestMapping
 	@Override
 	@Nullable
 	public RequestMappingInfo getMatchingCondition(HttpServletRequest request) {
-		// 这边是匹配http请求方式的，即，get,post,delete,put...
-		//@RequestMapping(value = "/method.do",method = RequestMethod.GET)
+
+		// @RequestMapping(value = "/xxx.do",method = {RequestMethod.GET,RequestMethod.POST})
+		// 判断当前的请求方式是否包含在@RequestMapping注解中，默认包含全部请求方式
 		RequestMethodsRequestCondition methods = this.methodsCondition.getMatchingCondition(request);
 		if (methods == null) {
 			return null;
 		}
 
+		// @RequestMapping(path = "/xxx.do", params = "myParam=myValue")---检查是否传递myParam参数，并且值为myValue
+		// @RequestMapping(path = "/xxx.do", params = "myParam")---检查是否传递myParam参数
 		ParamsRequestCondition params = this.paramsCondition.getMatchingCondition(request);
 		if (params == null) {
 			return null;
 		}
+
+
 		HeadersRequestCondition headers = this.headersCondition.getMatchingCondition(request);
 		if (headers == null) {
 			return null;
