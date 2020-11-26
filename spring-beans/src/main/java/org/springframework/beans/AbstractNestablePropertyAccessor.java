@@ -465,6 +465,9 @@ public abstract class AbstractNestablePropertyAccessor extends AbstractPropertyA
 							}
 						}
 					}
+					// 类型转换
+					// 将属性转换成实际使用类型
+					// typeConverter
 					valueToApply = convertForProperty(
 							tokens.canonicalName, oldValue, originalValue, ph.toTypeDescriptor());
 				}

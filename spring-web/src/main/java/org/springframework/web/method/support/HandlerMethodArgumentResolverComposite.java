@@ -175,8 +175,16 @@ public class HandlerMethodArgumentResolverComposite implements HandlerMethodArgu
 		 *
 		 * 		resolve idea:
 		 * 			1. 反射创建对象
-		 * 			2.
+		 * 			2. 通过DataBinder绑定属性
+		 * 				tips:
+		 * 					DataBinder底层也使用的是filed.set() or writeMethod.invoke(),通过TypeConverter就行的类型转换
+		 *
 		 * 	6. RequestResponseBodyMethodProcessor
+		 * 		support:
+		 * 			1. 添加了@RequestBody注解
+		 *
+		 * 		resolve idea
+		 * 			1. MessageConverter来转换
 		 * 	7. MapMethodProcessor
 		 */
 

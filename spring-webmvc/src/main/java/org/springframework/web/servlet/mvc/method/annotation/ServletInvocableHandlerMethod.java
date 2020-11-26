@@ -103,6 +103,9 @@ public class ServletInvocableHandlerMethod extends InvocableHandlerMethod {
 			Object... providedArgs) throws Exception {
 
 		// 执行handler
+		// steps:
+		// 	1. 封装参数 args
+		//	2. method.invoke(args)
 		Object returnValue = invokeForRequest(webRequest, mavContainer, providedArgs);
 		// 设置返回状态。这边处理的是@ResponseStatus注解
 		setResponseStatus(webRequest);

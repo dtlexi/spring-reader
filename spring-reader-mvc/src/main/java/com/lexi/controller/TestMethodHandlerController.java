@@ -3,6 +3,7 @@ package com.lexi.controller;
 import com.lexi.model.Person;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -66,13 +67,6 @@ public class TestMethodHandlerController {
 	}
 
 	@ResponseBody
-	@RequestMapping(value = "/params4.do")
-	public String testWithObjectParams4(@ModelAttribute Person person)
-	{
-		return "testWithObjectParams";
-	}
-
-	@ResponseBody
 	@RequestMapping(value = "/params2.do")
 	public String testWithMapParams(@RequestParam(required = false) Map<String,String> map)
 	{
@@ -87,9 +81,38 @@ public class TestMethodHandlerController {
 	}
 
 	@ResponseBody
+	@RequestMapping(value = "/params4.do")
+	public String testWithObjectParams4(@ModelAttribute Person person)
+	{
+		return "testWithObjectParams";
+	}
+
+	@ResponseBody
 	@RequestMapping(value = "/params5/{name}/{age}.do")
 	public String testWithParams5(@PathVariable String name,@PathVariable int age)
 	{
 		return "params";
+	}
+
+	@ResponseBody
+	@RequestMapping(value = "/params6.do")
+	public String testWithJsonParams(@RequestBody Person person)
+	{
+		return "testWithJsonParams";
+	}
+
+
+	@RequestMapping(value = "/return/mv.do")
+	public ModelAndView testReturnWithModelAndView()
+	{
+		ModelAndView modelAndView=new ModelAndView();
+		modelAndView.setViewName("index");
+		return  modelAndView;
+	}
+
+	@RequestMapping(value = "/return/str.do")
+	public String testReturnWithStr()
+	{
+		return  "index";
 	}
 }

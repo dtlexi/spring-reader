@@ -127,7 +127,10 @@ public class RequestResponseBodyMethodProcessor extends AbstractMessageConverter
 	public Object resolveArgument(MethodParameter parameter, @Nullable ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, @Nullable WebDataBinderFactory binderFactory) throws Exception {
 
+		// 获取参数
 		parameter = parameter.nestedIfOptional();
+		// 通过MessageConverter转换参数
+		// 这边比较常用的就json解析器
 		Object arg = readWithMessageConverters(webRequest, parameter, parameter.getNestedGenericParameterType());
 		String name = Conventions.getVariableNameForParameter(parameter);
 
