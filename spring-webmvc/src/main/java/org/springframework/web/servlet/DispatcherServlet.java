@@ -1164,6 +1164,7 @@ public class DispatcherServlet extends FrameworkServlet {
 
 		if (mappedHandler != null) {
 			// Exception (if any) is already handled..
+			// 执行拦截器的 afterCompletion 方法
 			mappedHandler.triggerAfterCompletion(request, response, null);
 		}
 	}

@@ -178,8 +178,11 @@ public abstract class AbstractMessageConverterMethodProcessor extends AbstractMe
 			ServletServerHttpRequest inputMessage, ServletServerHttpResponse outputMessage)
 			throws IOException, HttpMediaTypeNotAcceptableException, HttpMessageNotWritableException {
 
+		// 对象本身
 		Object body;
+		// 返回值类型
 		Class<?> valueType;
+		// 返回值实际类型
 		Type targetType;
 
 		// 判断当前是否是string
