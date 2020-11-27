@@ -205,12 +205,6 @@ public class HandlerMethodArgumentResolverComposite implements HandlerMethodArgu
 	private HandlerMethodArgumentResolver getArgumentResolver(MethodParameter parameter) {
 		HandlerMethodArgumentResolver result = this.argumentResolverCache.get(parameter);
 		if (result == null) {
-			// this.argumentResolvers有2个RequestParamMethodArgumentResolver，
-			// 		其中第一个useDefaultResolution==false，表是当前值匹配加了@RequestParam注解的参数
-			//		另外一个useDefaultResolution==true，表示当前匹配基本数据类型的参数
-
-
-
 			// <img src="https://res-by-lexi.oss-cn-shanghai.aliyuncs.com/1606286127280.png"  />
 			for (HandlerMethodArgumentResolver resolver : this.argumentResolvers) {
 				if (resolver.supportsParameter(parameter)) {
