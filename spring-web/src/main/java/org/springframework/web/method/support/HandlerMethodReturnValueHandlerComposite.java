@@ -81,8 +81,10 @@ public class HandlerMethodReturnValueHandlerComposite implements HandlerMethodRe
 		 * 1. ModelAndViewMethodReturnValueHandler
 		 *
 		 * 		support:
-		 *
+		 *			返回值实现了 ModelAndView
 		 * 		do:
+		 * 			1. 将viewName或者view设置到ModelAndViewContainer
+		 * 			2. 将model设置到ModelAndViewContainer
 		 *
 		 * 2. RequestResponseBodyMethodProcessor
 		 *
@@ -93,8 +95,9 @@ public class HandlerMethodReturnValueHandlerComposite implements HandlerMethodRe
 		 * 3. ViewNameMethodReturnValueHandler
 		 *
 		 * 		support:
-		 *
+		 *			返回值是void or String
 		 * 		do:
+		 * 			将返回值设置到 ModelAndViewContainer的ViewName
 		 *
 		 */
 

@@ -115,4 +115,14 @@ public class TestMethodHandlerController {
 	{
 		return  "index";
 	}
+
+	@ResponseBody
+	@RequestMapping(value = "/return/obj.do")
+	public Person testReturnWithObject()
+	{
+		Person p=new Person();
+		p.setName("lexi");
+		p.setAge(18);
+		return  p;
+	}
 }
