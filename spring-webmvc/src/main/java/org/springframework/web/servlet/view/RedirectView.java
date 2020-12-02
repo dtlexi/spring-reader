@@ -611,8 +611,10 @@ public class RedirectView extends AbstractUrlBasedView implements SmartView {
 	protected void sendRedirect(HttpServletRequest request, HttpServletResponse response,
 			String targetUrl, boolean http10Compatible) throws IOException {
 
+		// 跳转路径
 		String encodedURL = (isRemoteHost(targetUrl) ? targetUrl : response.encodeRedirectURL(targetUrl));
 		if (http10Compatible) {
+			// code
 			HttpStatus attributeStatusCode = (HttpStatus) request.getAttribute(View.RESPONSE_STATUS_ATTRIBUTE);
 			if (this.statusCode != null) {
 				response.setStatus(this.statusCode.value());
@@ -620,6 +622,7 @@ public class RedirectView extends AbstractUrlBasedView implements SmartView {
 			}
 			else if (attributeStatusCode != null) {
 				response.setStatus(attributeStatusCode.value());
+				// 设置header
 				response.setHeader("Location", encodedURL);
 			}
 			else {

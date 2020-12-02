@@ -472,7 +472,7 @@ public class UrlBasedViewResolver extends AbstractCachingViewResolver implements
 			return null;
 		}
 
-		// Check for special "redirect:" prefix.
+		// 处理redirect:
 		if (viewName.startsWith(REDIRECT_URL_PREFIX)) {
 			String redirectUrl = viewName.substring(REDIRECT_URL_PREFIX.length());
 			RedirectView view = new RedirectView(redirectUrl,
@@ -481,13 +481,15 @@ public class UrlBasedViewResolver extends AbstractCachingViewResolver implements
 			if (hosts != null) {
 				view.setHosts(hosts);
 			}
+			// 执行bean生命周期最后的initializeBean方法
 			return applyLifecycleMethods(REDIRECT_URL_PREFIX, view);
 		}
 
-		// Check for special "forward:" prefix.
+		// 处理forward:
 		if (viewName.startsWith(FORWARD_URL_PREFIX)) {
 			String forwardUrl = viewName.substring(FORWARD_URL_PREFIX.length());
 			InternalResourceView view = new InternalResourceView(forwardUrl);
+			// 执行bean生命周期最后的initializeBean方法
 			return applyLifecycleMethods(FORWARD_URL_PREFIX, view);
 		}
 
@@ -529,6 +531,7 @@ public class UrlBasedViewResolver extends AbstractCachingViewResolver implements
 	protected View loadView(String viewName, Locale locale) throws Exception {
 		AbstractUrlBasedView view = buildView(viewName);
 		View result = applyLifecycleMethods(viewName, view);
+		// checkResource 恒定返回true
 		return (view.checkResource(locale) ? result : null);
 	}
 

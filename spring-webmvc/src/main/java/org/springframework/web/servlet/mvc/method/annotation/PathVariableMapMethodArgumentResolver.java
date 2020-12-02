@@ -57,11 +57,13 @@ public class PathVariableMapMethodArgumentResolver implements HandlerMethodArgum
 	public Object resolveArgument(MethodParameter parameter, @Nullable ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, @Nullable WebDataBinderFactory binderFactory) throws Exception {
 
+		// 将url参数封装成map
 		@SuppressWarnings("unchecked")
 		Map<String, String> uriTemplateVars =
 				(Map<String, String>) webRequest.getAttribute(
 						HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE, RequestAttributes.SCOPE_REQUEST);
 
+		// 将map转换成LinkedHashMap
 		if (!CollectionUtils.isEmpty(uriTemplateVars)) {
 			return new LinkedHashMap<>(uriTemplateVars);
 		}

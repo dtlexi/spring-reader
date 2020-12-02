@@ -1001,6 +1001,7 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 		ModelMap model = mavContainer.getModel();
 
 		// 实例化一个ModelAndView对象
+		// View Model Status
 		ModelAndView mav = new ModelAndView(mavContainer.getViewName(), model, mavContainer.getStatus());
 		if (!mavContainer.isViewReference()) {
 			mav.setView((View) mavContainer.getView());

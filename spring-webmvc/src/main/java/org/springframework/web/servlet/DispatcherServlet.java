@@ -1393,6 +1393,7 @@ public class DispatcherServlet extends FrameworkServlet {
 		// 拿到视图名称
 		String viewName = mv.getViewName();
 		if (viewName != null) {
+			// 创建视图
 			// 找一个视图解析器 InternalResourceViewResolver
 			view = resolveViewName(viewName, mv.getModelInternal(), locale, request);
 			if (view == null) {

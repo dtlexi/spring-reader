@@ -125,23 +125,33 @@ public class RequestParamMethodArgumentResolver extends AbstractNamedValueMethod
 	 */
 	@Override
 	public boolean supportsParameter(MethodParameter parameter) {
+		// 加了@RequestParam注解
 		if (parameter.hasParameterAnnotation(RequestParam.class)) {
+			// 是否是Map类型
 			if (Map.class.isAssignableFrom(parameter.nestedIfOptional().getNestedParameterType())) {
 				RequestParam requestParam = parameter.getParameterAnnotation(RequestParam.class);
+				// 如果指定了name,返回true
+				// 否则返回false
 				return (requestParam != null && StringUtils.hasText(requestParam.name()));
 			}
 			else {
+				// 返回true
 				return true;
 			}
 		}
 		else {
+			// 如果添加了RequestPart直接返回false
 			if (parameter.hasParameterAnnotation(RequestPart.class)) {
 				return false;
 			}
+			// 如果是上传文件，直接返回true
 			parameter = parameter.nestedIfOptional();
 			if (MultipartResolutionDelegate.isMultipartArgument(parameter)) {
 				return true;
 			}
+			// 如果useDefaultResolution==true
+			// 并且是简单类型，String,Number,Class,Enum，and 对呀的数组
+			// 返回true
 			else if (this.useDefaultResolution) {
 				return BeanUtils.isSimpleProperty(parameter.getNestedParameterType());
 			}

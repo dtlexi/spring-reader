@@ -125,4 +125,10 @@ public class TestMethodHandlerController {
 		p.setAge(18);
 		return  p;
 	}
+
+	@ModelAttribute
+	public void testModelAttribute()
+	{
+		System.out.println("testModelAttribute");
+	}
 }

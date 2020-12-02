@@ -57,4 +57,7 @@ public class HelloController implements InitializingBean,BaseController {
 	public String test() {
 		return  "test";
 	}
+
+
 }
+

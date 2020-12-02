@@ -287,9 +287,11 @@ public abstract class AbstractNestablePropertyAccessor extends AbstractPropertyA
 
 	protected void setPropertyValue(PropertyTokenHolder tokens, PropertyValue pv) throws BeansException {
 		if (tokens.keys != null) {
+			// 处理数组，List,Map
 			processKeyedProperty(tokens, pv);
 		}
 		else {
+			// 处理普通的field,或者writeMtehod
 			processLocalProperty(tokens, pv);
 		}
 	}
@@ -305,6 +307,7 @@ public abstract class AbstractNestablePropertyAccessor extends AbstractPropertyA
 		Assert.state(tokens.keys != null, "No token keys");
 		String lastKey = tokens.keys[tokens.keys.length - 1];
 
+		// 要赋值的属性是数组
 		if (propValue.getClass().isArray()) {
 			Class<?> requiredType = propValue.getClass().getComponentType();
 			int arrayIndex = Integer.parseInt(lastKey);
@@ -331,6 +334,7 @@ public abstract class AbstractNestablePropertyAccessor extends AbstractPropertyA
 			}
 		}
 
+		// 要赋值的属性是List
 		else if (propValue instanceof List) {
 			Class<?> requiredType = ph.getCollectionType(tokens.keys.length);
 			List<Object> list = (List<Object>) propValue;
@@ -367,6 +371,7 @@ public abstract class AbstractNestablePropertyAccessor extends AbstractPropertyA
 			}
 		}
 
+		// 要赋值的属性是Map
 		else if (propValue instanceof Map) {
 			Class<?> mapKeyType = ph.getMapKeyType(tokens.keys.length);
 			Class<?> mapValueType = ph.getMapValueType(tokens.keys.length);
@@ -444,7 +449,9 @@ public abstract class AbstractNestablePropertyAccessor extends AbstractPropertyA
 
 		Object oldValue = null;
 		try {
+			// 原始值
 			Object originalValue = pv.getValue();
+			// 最后赋值使用到的
 			Object valueToApply = originalValue;
 			if (!Boolean.FALSE.equals(pv.conversionNecessary)) {
 				if (pv.isConverted()) {
@@ -473,6 +480,9 @@ public abstract class AbstractNestablePropertyAccessor extends AbstractPropertyA
 				}
 				pv.getOriginalPropertyValue().conversionNecessary = (valueToApply != originalValue);
 			}
+			// 属性赋值
+			// filed.set()
+			// writeMethod.invoke()
 			ph.setValue(valueToApply);
 		}
 		catch (TypeMismatchException ex) {

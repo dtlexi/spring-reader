@@ -129,9 +129,10 @@ public abstract class AbstractNamedValueMethodArgumentResolver implements Handle
 		}
 
 		if (binderFactory != null) {
+			// DataBinder
 			WebDataBinder binder = binderFactory.createBinder(webRequest, null, namedValueInfo.name);
 			try {
-				// 使用Spring自带的TypeConverter转换成对应的类型
+				// 使用DataBinder转换类型，内部是使用的spring TypeConverter
 				arg = binder.convertIfNecessary(arg, parameter.getParameterType(), parameter);
 			}
 			catch (ConversionNotSupportedException ex) {
