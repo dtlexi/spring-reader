@@ -409,6 +409,7 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 		List<Match> matches = new ArrayList<>();
 
 		// 这边是通过lookupPath从一个map中获取handler
+		// 此时可能有多个，因为post,get，url可能相同
 		List<T> directPathMatches = this.mappingRegistry.getMappingsByUrl(lookupPath);
 		if (directPathMatches != null) {
 			addMatchingMappings(directPathMatches, matches, request);
@@ -466,6 +467,7 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 			T match = getMatchingMapping(mapping, request);
 			if (match != null) {
 				// 将符合条件的match添加到集合中去
+				// 此时match是一个全新的RequestMappingInfo,不是在初始化阶段注册的
 				matches.add(new Match(match, this.mappingRegistry.getMappings().get(mapping)));
 			}
 		}

@@ -103,6 +103,7 @@ public final class ModelFactory {
 
 		Map<String, ?> sessionAttributes = this.sessionAttributesHandler.retrieveAttributes(request);
 		container.mergeAttributes(sessionAttributes);
+
 		// 执行添加了@ModelAttribute属性的方法
 		invokeModelAttributeMethods(request, container);
 
@@ -124,10 +125,14 @@ public final class ModelFactory {
 	private void invokeModelAttributeMethods(NativeWebRequest request, ModelAndViewContainer container)
 			throws Exception {
 
+		// 循环遍历当前所有加了@ModelAttribute的方法
 		while (!this.modelMethods.isEmpty()) {
+			// 获取当前方法
 			InvocableHandlerMethod modelMethod = getNextModelMethod(container).getHandlerMethod();
+			// 获取ModelAttribute信息
 			ModelAttribute ann = modelMethod.getMethodAnnotation(ModelAttribute.class);
 			Assert.state(ann != null, "No ModelAttribute annotation");
+			// 如果modelAndViewContainer中已经包含了当前属性
 			if (container.containsAttribute(ann.name())) {
 				if (!ann.binding()) {
 					container.setBindingDisabled(ann.name());
@@ -135,12 +140,15 @@ public final class ModelFactory {
 				continue;
 			}
 
+			// 执行@ModelAttribute方法
 			Object returnValue = modelMethod.invokeForRequest(request, container);
 			if (!modelMethod.isVoid()){
+				// 获取属性名称，默认是用@ModelAttribute的name属性
 				String returnValueName = getNameForReturnValue(returnValue, modelMethod.getReturnType());
 				if (!ann.binding()) {
 					container.setBindingDisabled(returnValueName);
 				}
+				// 将执行结果添加到ModelAndViewContainer中去
 				if (!container.containsAttribute(returnValueName)) {
 					container.addAttribute(returnValueName, returnValue);
 				}

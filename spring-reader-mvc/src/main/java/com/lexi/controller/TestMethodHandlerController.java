@@ -131,4 +131,10 @@ public class TestMethodHandlerController {
 	{
 		System.out.println("testModelAttribute");
 	}
+
+	@ModelAttribute(name = "name")
+	public String testModelAttribute1()
+	{
+		return  "lexi";
+	}
 }
