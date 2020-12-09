@@ -312,6 +312,7 @@ public abstract class AbstractView extends WebApplicationObjectSupport implement
 		}
 
 		// 合并model
+		// 1. 将modelAndView model中的属性和pathVars中的属性合并到一起
 		Map<String, Object> mergedModel = createMergedOutputModel(model, request, response);
 
 		// 设置Header or other

@@ -356,6 +356,15 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 
 		// Create proxy if we have advice.
 		// 找到满足条件的通知
+		// 1. 全出全部通知
+		//		a. 如果缓存中存在，从缓存中获取数据
+		//		b. 缓存中不存在，直接获取
+		//			i. 循环遍历所有beanName,找出所有切面类（是否添加了@Aspectj注解）
+		//		   ii. 如果当前bean是切面类，获取当前类所有除了@PointCut注解的方法，循环遍历
+		//		  iii. 如果当前方法添加了@Before，@Around等方法，封装获取注解内容，封装Pointcut，封装成Advisor
+		// 2. 找出适用的通知
+		//		a. 循环遍历所有通知，看看是否适用,这边是看当前通知是否适用于当前类的所有方法（循环遍历所有方法，看看是否适用）
+		// 3. 排序通知
 		Object[] specificInterceptors = getAdvicesAndAdvisorsForBean(bean.getClass(), beanName, null);
 		if (specificInterceptors != DO_NOT_PROXY) {
 			this.advisedBeans.put(cacheKey, Boolean.TRUE);

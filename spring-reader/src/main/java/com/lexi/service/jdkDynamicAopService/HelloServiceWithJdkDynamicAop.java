@@ -8,4 +8,9 @@ public class HelloServiceWithJdkDynamicAop implements  IJdkDynamicAopService {
 	{
 
 	}
+
+	public String say1()
+	{
+		return  "1";
+	}
 }

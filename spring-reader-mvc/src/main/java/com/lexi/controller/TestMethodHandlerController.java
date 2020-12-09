@@ -102,6 +102,12 @@ public class TestMethodHandlerController {
 	}
 
 
+	@RequestMapping(value = "/params7/{name}/{age}.do")
+	public String testWithParams7(@PathVariable String name,@PathVariable int age)
+	{
+		return "index";
+	}
+
 	@RequestMapping(value = "/return/mv.do")
 	public ModelAndView testReturnWithModelAndView()
 	{

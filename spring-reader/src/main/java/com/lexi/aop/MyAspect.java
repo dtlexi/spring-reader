@@ -16,6 +16,13 @@ public class MyAspect {
 	{
 
 	}
+
+	@Pointcut("execution(String com.lexi.service.jdkDynamicAopService.*.*(..))")
+	public void PointCut1()
+	{
+
+	}
+
 	@Around("PointCut()")
 	public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
 		System.out.println("around before");
@@ -24,7 +31,7 @@ public class MyAspect {
 		return retObj;
 	}
 
-	@Before("PointCut()")
+	@Before("PointCut1()")
 	public void before(JoinPoint joinPoint)
 	{
 		System.out.println("before");
@@ -42,9 +49,12 @@ public class MyAspect {
 		System.out.println("after");
 	}
 
+
+
 	@AfterThrowing("PointCut()")
 	public void afterThrowing(JoinPoint joinPoint)
 	{
 		System.out.println("afterThrowing");
 	}
+
 }
