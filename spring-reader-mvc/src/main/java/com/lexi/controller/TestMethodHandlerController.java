@@ -5,6 +5,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -54,7 +55,7 @@ public class TestMethodHandlerController {
 
 	@ResponseBody
 	@RequestMapping(value = "/params.do")
-	public String testWithParams(String name,int age)
+	public String testWithParams(String name, int age, Date time)
 	{
 		return "params";
 	}

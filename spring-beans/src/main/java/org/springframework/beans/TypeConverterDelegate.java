@@ -116,16 +116,42 @@ class TypeConverterDelegate {
 			@Nullable Class<T> requiredType, @Nullable TypeDescriptor typeDescriptor) throws IllegalArgumentException {
 
 		// Custom editor for this type?
+		// 原生的Java是有一个可以提供数据转换功能的工具
+		// PropertyEditor
+		// 但是它的功能有限，它只能将字符串转换为一个Java对象
 		PropertyEditor editor = this.propertyEditorRegistry.findCustomEditor(requiredType, propertyName);
 
 		ConversionFailedException conversionAttemptEx = null;
 
 		// No custom editor but custom ConversionService specified?
+
+		// ConversionService
+		// Spring Mvc这边默认是初始化时注册的DefaultConversionService
 		ConversionService conversionService = this.propertyEditorRegistry.getConversionService();
 		if (editor == null && conversionService != null && newValue != null && typeDescriptor != null) {
+			// 实际传递的数据类型
 			TypeDescriptor sourceTypeDesc = TypeDescriptor.forObject(newValue);
+
+			/**
+			 * 当前conversionService是否可以将当前type转换为targetType
+			 * 内部原理很简单，其实就是看看能否找到一个合适的converter
+			 *
+			 * 这边在身边提一下寻找converter的原理，
+			 * spring 维护了一个map Map<ConvertiblePair, ConvertersForPair>
+			 * 这边我们为了方便理解，可以把它简单理解为	Map<String, Converter>,其中String格式为 sourceType->targetType
+			 * 例如：String->Number,StringToNumberConverter
+			 *
+			 * 假如此时我们需要将String->Integer，此时的key为String->Integer，上面的map中找不到，那么怎么办？
+			 * 此时Spring会先将String类型拆为 [String,Serializable,Comparable,CharSequence,Object]
+			 * Integer同样拆为自己的类型层[Integer,Number,...]
+			 * 此时来个双层for循环，到map中去寻找
+			 * "String->Integer" 	×
+			 * "String->Number"		√
+			 * 此时就找到了对应的converter
+			 */
 			if (conversionService.canConvert(sourceTypeDesc, typeDescriptor)) {
 				try {
+					// 内部利用converter来处理数据
 					return (T) conversionService.convert(newValue, sourceTypeDesc, typeDescriptor);
 				}
 				catch (ConversionFailedException ex) {
@@ -135,9 +161,15 @@ class TypeConverterDelegate {
 			}
 		}
 
+
+		// 因为spring自带了很多常见类型的转换器，大部分都可以通过上面的转换器完成。
+		// 程序运行到这里没有结束的话很可能说明类型是没有定义转换器的自定义类型或者参数格式真的不正确
+
 		Object convertedValue = newValue;
 
 		// Value not of required type?
+
+		// 利用PropertyEditor解析数据
 		if (editor != null || (requiredType != null && !ClassUtils.isAssignableValue(requiredType, convertedValue))) {
 			if (typeDescriptor != null && requiredType != null && Collection.class.isAssignableFrom(requiredType) &&
 					convertedValue instanceof String) {
@@ -161,6 +193,7 @@ class TypeConverterDelegate {
 			// Try to apply some standard type conversion rules if appropriate.
 
 			if (convertedValue != null) {
+				// 如果
 				if (Object.class == requiredType) {
 					return (T) convertedValue;
 				}
