@@ -3,12 +3,16 @@ package com.lexi;
 import com.lexi.config.SpringConfig;
 import com.lexi.service.jdkDynamicAopService.IJdkDynamicAopService;
 import com.lexi.service.*;
+import org.springframework.beans.SimpleTypeConverter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.core.convert.support.DefaultConversionService;
+import org.springframework.validation.DataBinder;
 
 public class Reader {
 	public static void main(String[] args) throws Exception {
 		ApplicationContext context=new AnnotationConfigApplicationContext(SpringConfig.class);
+
 
 //		HelloServiceAutowired1 helloServiceAutowired1=context.getBean(HelloServiceAutowired1.class);
 
@@ -18,8 +22,6 @@ public class Reader {
 		IJdkDynamicAopService jdkDynamicAopService=context.getBean(IJdkDynamicAopService.class);
 		jdkDynamicAopService.say();
 		System.out.println(jdkDynamicAopService);
-
-//		System.out.println(helloServiceAutowired1);
 	}
 }
 

@@ -189,6 +189,8 @@ class TypeConverterDelegate {
 
 		boolean standardConversion = false;
 
+		// 接下来就处理数组，集合...
+		// 循环每一个元素，调用convertIfNecessary，最后处理成对应的数据类型
 		if (requiredType != null) {
 			// Try to apply some standard type conversion rules if appropriate.
 

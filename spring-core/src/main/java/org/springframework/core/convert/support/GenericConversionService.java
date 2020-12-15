@@ -186,9 +186,12 @@ public class GenericConversionService implements ConfigurableConversionService {
 			throw new IllegalArgumentException("Source to convert from must be an instance of [" +
 					sourceType + "]; instead it was a [" + source.getClass().getName() + "]");
 		}
+		// 获取converter
 		GenericConverter converter = getConverter(sourceType, targetType);
 		if (converter != null) {
+			// 类型转换
 			Object result = ConversionUtils.invokeConverter(converter, source, sourceType, targetType);
+			// return result
 			return handleResult(sourceType, targetType, result);
 		}
 		return handleConverterNotFound(source, sourceType, targetType);
@@ -252,17 +255,20 @@ public class GenericConversionService implements ConfigurableConversionService {
 	@Nullable
 	protected GenericConverter getConverter(TypeDescriptor sourceType, TypeDescriptor targetType) {
 		ConverterCacheKey key = new ConverterCacheKey(sourceType, targetType);
+		// 缓存获取
 		GenericConverter converter = this.converterCache.get(key);
 		if (converter != null) {
 			return (converter != NO_MATCH ? converter : null);
 		}
 
+		// 真正获取converter
 		converter = this.converters.find(sourceType, targetType);
 		if (converter == null) {
 			converter = getDefaultConverter(sourceType, targetType);
 		}
 
 		if (converter != null) {
+			// 缓存
 			this.converterCache.put(key, converter);
 			return converter;
 		}
@@ -539,9 +545,13 @@ public class GenericConversionService implements ConfigurableConversionService {
 			// Search the full type hierarchy
 			List<Class<?>> sourceCandidates = getClassHierarchy(sourceType.getType());
 			List<Class<?>> targetCandidates = getClassHierarchy(targetType.getType());
+			// 循环遍历source的class和他的父类
 			for (Class<?> sourceCandidate : sourceCandidates) {
+				// 循环遍历target的class和他的父类
 				for (Class<?> targetCandidate : targetCandidates) {
+					// 封装
 					ConvertiblePair convertiblePair = new ConvertiblePair(sourceCandidate, targetCandidate);
+					// 找到一个合适的converter
 					GenericConverter converter = getRegisteredConverter(sourceType, targetType, convertiblePair);
 					if (converter != null) {
 						return converter;

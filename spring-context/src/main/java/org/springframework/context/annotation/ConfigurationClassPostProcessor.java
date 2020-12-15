@@ -280,16 +280,35 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	 * {@link Configuration} classes.
 	 */
 	public void processConfigBeanDefinitions(BeanDefinitionRegistry registry) {
+		// 用来存放配置类
 		List<BeanDefinitionHolder> configCandidates = new ArrayList<>();
+		// 获取当前所有的bd name 此时因为还没有开始初始化，
+		// 此时容器中的bd只有spring 开天辟地的几个db。
+		// 还有我们自己实例化context对象是传递的SpringConfig类
 		String[] candidateNames = registry.getBeanDefinitionNames();
 
+		//循环遍历所有candidateName
 		for (String beanName : candidateNames) {
+			// 获取当前bd
 			BeanDefinition beanDef = registry.getBeanDefinition(beanName);
+
+			// 判断一下当前配置类是否已经解析
 			if (beanDef.getAttribute(ConfigurationClassUtils.CONFIGURATION_CLASS_ATTRIBUTE) != null) {
 				if (logger.isDebugEnabled()) {
 					logger.debug("Bean definition has already been processed as a configuration class: " + beanDef);
 				}
 			}
+
+			// 检查一下当前bd是否是配置类
+			// 这边的配置类不仅仅是加了@Configuration
+			// 还包括如下：
+			//	1. @ComponentScan
+			//	2. @Bean
+			// 	3. @Component
+			// 	4. @Import
+			// 	5. @ImportResource
+			// 但是@Configuration和其他又有点不同，@Configuration会标记CONFIGURATION_CLASS_ATTRIBUTE为full
+			// 其他情况会标记为lite
 			else if (ConfigurationClassUtils.checkConfigurationClassCandidate(beanDef, this.metadataReaderFactory)) {
 				configCandidates.add(new BeanDefinitionHolder(beanDef, beanName));
 			}

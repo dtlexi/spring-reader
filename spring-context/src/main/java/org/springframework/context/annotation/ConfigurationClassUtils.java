@@ -89,6 +89,7 @@ abstract class ConfigurationClassUtils {
 			return false;
 		}
 
+		// 获取原数据 metadate
 		AnnotationMetadata metadata;
 		if (beanDef instanceof AnnotatedBeanDefinition &&
 				className.equals(((AnnotatedBeanDefinition) beanDef).getMetadata().getClassName())) {
@@ -121,11 +122,17 @@ abstract class ConfigurationClassUtils {
 			}
 		}
 
+		// 获取@Configuration注解
 		Map<String, Object> config = metadata.getAnnotationAttributes(Configuration.class.getName());
+		// config !=null & proxyBeanMethods
 		if (config != null && !Boolean.FALSE.equals(config.get("proxyBeanMethods"))) {
+			// configurationClass属性值设置为full
 			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_FULL);
 		}
+		// isConfigurationCandidate
+		// 判断@Import，@Component,@ComponentScan,@Bean,@ImportResource
 		else if (config != null || isConfigurationCandidate(metadata)) {
+			// configurationClass属性值设置为lite
 			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_LITE);
 		}
 		else {
