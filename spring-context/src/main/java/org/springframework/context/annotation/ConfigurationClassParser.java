@@ -167,10 +167,15 @@ class ConfigurationClassParser {
 
 
 	public void parse(Set<BeanDefinitionHolder> configCandidates) {
+		// 循环遍历所有配置类
 		for (BeanDefinitionHolder holder : configCandidates) {
+			// 获取当前bd
+			// 这边指的是配置类
 			BeanDefinition bd = holder.getBeanDefinition();
 			try {
+				// 注解
 				if (bd instanceof AnnotatedBeanDefinition) {
+					// 解析配置类
 					parse(((AnnotatedBeanDefinition) bd).getMetadata(), holder.getBeanName());
 				}
 				else if (bd instanceof AbstractBeanDefinition && ((AbstractBeanDefinition) bd).hasBeanClass()) {
@@ -266,6 +271,7 @@ class ConfigurationClassParser {
 			ConfigurationClass configClass, SourceClass sourceClass, Predicate<String> filter)
 			throws IOException {
 
+		// 处理内部类
 		if (configClass.getMetadata().isAnnotated(Component.class.getName())) {
 			// Recursively process any member (nested) classes first
 			processMemberClasses(configClass, sourceClass, filter);
