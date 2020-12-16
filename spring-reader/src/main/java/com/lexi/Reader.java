@@ -1,6 +1,7 @@
 package com.lexi;
 
 import com.lexi.config.SpringConfig;
+import com.lexi.properties.Postman;
 import com.lexi.service.jdkDynamicAopService.IJdkDynamicAopService;
 import com.lexi.service.*;
 import org.springframework.beans.SimpleTypeConverter;
@@ -21,6 +22,8 @@ public class Reader {
 
 		IJdkDynamicAopService jdkDynamicAopService=context.getBean(IJdkDynamicAopService.class);
 		jdkDynamicAopService.say();
+
+		System.out.println(context.getBean(Postman.class));
 		System.out.println(jdkDynamicAopService);
 	}
 }

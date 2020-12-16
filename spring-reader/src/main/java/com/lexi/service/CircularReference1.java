@@ -13,4 +13,9 @@ public class CircularReference1 {
 		System.out.println(this.circularReference2);
 		System.out.println("CircularReference1");
 	}
+
+	public class  InnerClass
+	{
+
+	}
 }

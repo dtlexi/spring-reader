@@ -309,9 +309,11 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 	 */
 	public Set<BeanDefinition> findCandidateComponents(String basePackage) {
 		if (this.componentsIndex != null && indexSupportsIncludeFilters()) {
+			// 上面是引入spring index生成扫描索引时
 			return addCandidateComponentsFromIndex(this.componentsIndex, basePackage);
 		}
 		else {
+			// 直接扫描，一般采用这个
 			return scanCandidateComponents(basePackage);
 		}
 	}
@@ -415,21 +417,43 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 	private Set<BeanDefinition> scanCandidateComponents(String basePackage) {
 		Set<BeanDefinition> candidates = new LinkedHashSet<>();
 		try {
+			// classpath+包名+.class
+			// classpath*:com/lexi/service/**/*.class
+			// 包路径
 			String packageSearchPath = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX +
 					resolveBasePackage(basePackage) + '/' + this.resourcePattern;
+			// 获取Resource
+			// 这边采用的是asm技术
 			Resource[] resources = getResourcePatternResolver().getResources(packageSearchPath);
 			boolean traceEnabled = logger.isTraceEnabled();
 			boolean debugEnabled = logger.isDebugEnabled();
+
+			// 循环遍历所有资源
+			// 这边可以理解为循环遍历所有java class
 			for (Resource resource : resources) {
 				if (traceEnabled) {
 					logger.trace("Scanning " + resource);
 				}
 				if (resource.isReadable()) {
 					try {
+						// 封装为 metadata
 						MetadataReader metadataReader = getMetadataReaderFactory().getMetadataReader(resource);
+						// 前面通过 asm 技术扫描除了当前路径的所有类
+						// 这边是判断当前资源是否符合扫描规则
+						// spring 定义includeFilter和excludeFilters两个list
+						// 		private final List<TypeFilter> includeFilters = new LinkedList<>();
+						//		private final List<TypeFilter> excludeFilters = new LinkedList<>();
+						// 其中includeFilter表示应该包含哪些规则，excludeFilters表示应该排除哪些规则
+						// spring 这边定义了AnnotationTypeFilter
+						// 其主要就是判断当前类是否添加了@Conponent注解
+						// 我们还可以自定义FilterType，只要定义一个类实现TypeFilter即可
+						// mybatis-spring 就是自定义了一个FilterType用来扫描@Mapper注解的
 						if (isCandidateComponent(metadataReader)) {
+							//初始化bd
 							ScannedGenericBeanDefinition sbd = new ScannedGenericBeanDefinition(metadataReader);
 							sbd.setSource(resource);
+							// 判断当前bd是否是满足条件的
+							// mybatis-spring 就是重写了当前方法，只筛选接口的
 							if (isCandidateComponent(sbd)) {
 								if (debugEnabled) {
 									logger.debug("Identified candidate component class: " + resource);
@@ -523,7 +547,11 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 	 */
 	protected boolean isCandidateComponent(AnnotatedBeanDefinition beanDefinition) {
 		AnnotationMetadata metadata = beanDefinition.getMetadata();
-		return (metadata.isIndependent() && (metadata.isConcrete() ||
+		// 判断当前类是不是独立类
+		return (metadata.isIndependent()
+				// 判断当前类是不是具体类
+				&& (metadata.isConcrete() ||
+				// 判断当前类是不是抽象类，并且添加了@Lookup注解
 				(metadata.isAbstract() && metadata.hasAnnotatedMethods(Lookup.class.getName()))));
 	}
 
