@@ -320,6 +320,8 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		}
 
 		// Sort by previously determined @Order value, if applicable
+
+		// 根据@Order 排序
 		configCandidates.sort((bd1, bd2) -> {
 			int i1 = ConfigurationClassUtils.getOrder(bd1.getBeanDefinition());
 			int i2 = ConfigurationClassUtils.getOrder(bd2.getBeanDefinition());
@@ -353,7 +355,42 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		Set<BeanDefinitionHolder> candidates = new LinkedHashSet<>(configCandidates);
 		Set<ConfigurationClass> alreadyParsed = new HashSet<>(configCandidates.size());
 		do {
-			// 解析配置类
+			/**
+			 * 解析配置类
+			 *
+			 * @Component
+			 * 	处理内部类，如果内部类是配置类，那么继续调用processConfigBeanDefinitions解析内部类
+			 * 	此时会将内部类转为配置类，并且将当前配置类传递给importBy，内部类将会在loadBeanDefinitions添加到registry中去
+			 *
+			 * @PropertySources
+			 * 	解析资源，并且设置到configClass中去
+			 *
+			 * @ComponentScan
+			 * 	实例化ClassPathBeanDefinitionScanner,通过ClassPathBeanDefinitionScanner进行扫描
+			 * 	scanner中会将扫描的bd添加到registry中
+			 *
+			 * @Import
+			 * 	1. ImportBeanDefinition
+			 * 		实例化ImportBeanDefinition，并且将当前对象添加到配置类中去
+			 * 		将会在下面的loadBeanDefinitions方法中被执行
+			 * 	2. ImportSelector
+			 * 		实例化ImportSelector对象。
+			 * 		执行importSelector方法。
+			 * 		继续执行当前processImports方法，导入的类将被当做下面普通类处理
+			 * 	3. 普通方法
+			 * 		将当前类转换为配置类
+			 * 		继续执行processConfigBeanDefinitions方法
+			 * 		将会在loadBeanDefinitions添加到registry中去
+			 *
+			 * @ImportResource
+			 * 	解析资源，并且设置到configClass中去
+			 *
+			 * @Bean
+			 * 	将当前类中加了@Bean的方法封装为BeanMethod
+			 * 	添加到集合中去
+			 * 	将会在loadBeanDefinitions添加到registry中去
+			 *
+			 */
 			parser.parse(candidates);
 			parser.validate();
 
@@ -370,18 +407,39 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			alreadyParsed.addAll(configClasses);
 
 			candidates.clear();
+
+			// 下面是确保所有的配置类都已经被解析
+			// 这边candidateNames就是刚开始几个类
+			// 正常情况下，registry.getBeanDefinitionCount() > candidateNames.length肯定成立
+
+			// 下面是去出当前仓库中所有的bd,已经解析的bd
+			// 找出当前还没有解析，并且是配置类的bd。
+
+			// 这种情况很少，ImportSelector和Import的普通类在Import是就已经被解析
+			// @Component ,@ComponentScans,@ComponentScan扫描出来的类也已经被解析
+
+			// 这边只有一种情况
+			// ImportBeanDefinitionRegister 在其中注册的bd，没有被配置文件解析过，如果其中包含@Bean...，
 			if (registry.getBeanDefinitionCount() > candidateNames.length) {
+				// 当前仓库中所有的bd
 				String[] newCandidateNames = registry.getBeanDefinitionNames();
+
+				// 刚开始注册的基本bd
 				Set<String> oldCandidateNames = new HashSet<>(Arrays.asList(candidateNames));
+
+				// 已近被解析过的bd
 				Set<String> alreadyParsedClasses = new HashSet<>();
 				for (ConfigurationClass configurationClass : alreadyParsed) {
 					alreadyParsedClasses.add(configurationClass.getMetadata().getClassName());
 				}
 				for (String candidateName : newCandidateNames) {
+					// 不是刚开始的bd
 					if (!oldCandidateNames.contains(candidateName)) {
 						BeanDefinition bd = registry.getBeanDefinition(candidateName);
+						// 是配置类，并且没有被解析过
 						if (ConfigurationClassUtils.checkConfigurationClassCandidate(bd, this.metadataReaderFactory) &&
 								!alreadyParsedClasses.contains(bd.getBeanClassName())) {
+							// 添加到candidates 里面继续解析
 							candidates.add(new BeanDefinitionHolder(bd, candidateName));
 						}
 					}

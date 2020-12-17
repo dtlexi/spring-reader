@@ -137,14 +137,29 @@ class ConfigurationClassBeanDefinitionReader {
 			return;
 		}
 
+		// isImported 由哪个类导入的
+		// 这边主要是下面几种情况：
+		// 1. @Import(ImportSelector): import ImportSelector类
+		// 2. @Import(CommonClass): import 普通类
+		// 3. 内部类被导入时
 		if (configClass.isImported()) {
+
+			// 初始化bd 并且设置属性
 			registerBeanDefinitionForImportedConfigurationClass(configClass);
 		}
+
+		// 注册@Bean bd
+		// 循环遍历所有bean method
+		// 封装bd,设置bd属性
 		for (BeanMethod beanMethod : configClass.getBeanMethods()) {
 			loadBeanDefinitionsForBeanMethod(beanMethod);
 		}
 
+		// 支持@ImportResource
 		loadBeanDefinitionsFromImportedResources(configClass.getImportedResources());
+
+		// 注册ImportBeanDefinitionRegistrars
+		// 循环遍历调用registerBeanDefinitions
 		loadBeanDefinitionsFromRegistrars(configClass.getImportBeanDefinitionRegistrars());
 	}
 
@@ -194,6 +209,9 @@ class ConfigurationClassBeanDefinitionReader {
 
 		// Consider name and any aliases
 		List<String> names = new ArrayList<>(Arrays.asList(bean.getStringArray("name")));
+
+		// 获取bean name
+		// 如果指定了，就用指定的，没指定，就用当前方法名称
 		String beanName = (!names.isEmpty() ? names.remove(0) : methodName);
 
 		// Register aliases even when overridden

@@ -1,6 +1,8 @@
 package com.lexi.service;
 
+import com.lexi.importDemo.Test3;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -16,6 +18,10 @@ public class CircularReference1 {
 
 	public class  InnerClass
 	{
-
+		@Bean
+		public Test3 createTest3()
+		{
+			return new Test3();
+		}
 	}
 }

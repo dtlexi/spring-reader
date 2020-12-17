@@ -231,6 +231,8 @@ class ConfigurationClassParser {
 			return;
 		}
 
+		// this.configurationClasses
+		// 如果当前类被解析完成，就会将当前类添加到这个集合中
 		ConfigurationClass existingClass = this.configurationClasses.get(configClass);
 		if (existingClass != null) {
 			if (configClass.isImported()) {
@@ -255,6 +257,7 @@ class ConfigurationClassParser {
 		}
 		while (sourceClass != null);
 
+		// configurationClasses 代表当前类已近被解析过
 		this.configurationClasses.put(configClass, configClass);
 	}
 
@@ -294,7 +297,6 @@ class ConfigurationClassParser {
 		}
 
 		// Process any @ComponentScan annotations
-
 		// 处理@ComponentScan注解
 		// 内部实例化了一个ClassPathBeanDefinitionScanner 用来扫描@Component注解
 		// 并且ClassPathBeanDefinitionScanner 会将扫描的bd注册到容器中
@@ -328,20 +330,20 @@ class ConfigurationClassParser {
 		}
 
 		// Process any @Import annotations
-
 		// 处理@Import
 		processImports(configClass, sourceClass, getImports(sourceClass), filter, true);
 
 		// Process any @ImportResource annotations
-
 		// 处理@ImportResource
 		AnnotationAttributes importResource =
 				AnnotationConfigUtils.attributesFor(sourceClass.getMetadata(), ImportResource.class);
 		if (importResource != null) {
+			// 获取resouce
 			String[] resources = importResource.getStringArray("locations");
 			Class<? extends BeanDefinitionReader> readerClass = importResource.getClass("reader");
 			for (String resource : resources) {
 				String resolvedResource = this.environment.resolveRequiredPlaceholders(resource);
+				// 将resource添加到configClass中去
 				configClass.addImportedResource(resolvedResource, readerClass);
 			}
 		}
@@ -639,6 +641,7 @@ class ConfigurationClassParser {
 
 						// 这边是将ImportBeanDefinitionRegistrar对象添加到集合中
 						// 这边没有执行ImportBeanDefinitionRegistrar对象
+						// 这边没有执行，将在下面的ClassPathBeanDefinitionReader中执行
 						configClass.addImportBeanDefinitionRegistrar(registrar, currentSourceClass.getMetadata());
 					}
 					else {

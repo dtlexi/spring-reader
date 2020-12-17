@@ -9,7 +9,7 @@ import org.springframework.context.annotation.*;
 @ComponentScan("com.lexi")
 @EnableAspectJAutoProxy(proxyTargetClass = false,exposeProxy = true)
 @ImportResource("classpath:beans.xml")
-@Import(ImportSelectorDemo.class)
+@Import(ImportBeanDefinitionRegistrarDemo.class)
 public class SpringConfig {
 	@Bean
 	public HelloServiceCreateByAnnoBean createHelloServiceCreateByAnnoBean()
