@@ -5,7 +5,7 @@ import com.lexi.importDemo.ImportSelectorDemo;
 import com.lexi.service.annoBean.HelloServiceCreateByAnnoBean;
 import org.springframework.context.annotation.*;
 
-//@Configuration
+@Configuration
 @ComponentScan("com.lexi")
 @EnableAspectJAutoProxy(proxyTargetClass = false,exposeProxy = true)
 @ImportResource("classpath:beans.xml")
