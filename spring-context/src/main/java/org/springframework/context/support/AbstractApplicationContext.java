@@ -1112,6 +1112,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	@Override
 	public Object getBean(String name) throws BeansException {
 		assertBeanFactoryActive();
+		// 调用beanFactory.getBean(name)
 		return getBeanFactory().getBean(name);
 	}
 
@@ -1130,6 +1131,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	@Override
 	public <T> T getBean(Class<T> requiredType) throws BeansException {
 		assertBeanFactoryActive();
+		// getBean
 		return getBeanFactory().getBean(requiredType);
 	}
 

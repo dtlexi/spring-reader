@@ -418,10 +418,13 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
 	@Nullable
 	private <T> T resolveBean(ResolvableType requiredType, @Nullable Object[] args, boolean nonUniqueAsNull) {
+		// 解析当前bean
 		NamedBeanHolder<T> namedBean = resolveNamedBean(requiredType, args, nonUniqueAsNull);
 		if (namedBean != null) {
 			return namedBean.getBeanInstance();
 		}
+
+		// 父容器中获取
 		BeanFactory parent = getParentBeanFactory();
 		if (parent instanceof DefaultListableBeanFactory) {
 			return ((DefaultListableBeanFactory) parent).resolveBean(requiredType, args, nonUniqueAsNull);
@@ -495,13 +498,17 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		if (!isConfigurationFrozen() || type == null || !allowEagerInit) {
 			return doGetBeanNamesForType(ResolvableType.forRawClass(type), includeNonSingletons, allowEagerInit);
 		}
+		// beanType-> beanName 缓存
 		Map<Class<?>, String[]> cache =
 				(includeNonSingletons ? this.allBeanNamesByType : this.singletonBeanNamesByType);
+		// 缓存中获取
 		String[] resolvedBeanNames = cache.get(type);
 		if (resolvedBeanNames != null) {
 			return resolvedBeanNames;
 		}
+		// 直接获取
 		resolvedBeanNames = doGetBeanNamesForType(ResolvableType.forRawClass(type), includeNonSingletons, true);
+		// 添加到缓存
 		if (ClassUtils.isCacheSafe(type, getBeanClassLoader())) {
 			cache.put(type, resolvedBeanNames);
 		}
@@ -512,11 +519,13 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		List<String> result = new ArrayList<>();
 
 		// Check all bean definitions.
+		// 循环遍历所有bean name
 		for (String beanName : this.beanDefinitionNames) {
 			// Only consider bean as eligible if the bean name
 			// is not defined as alias for some other bean.
 			if (!isAlias(beanName)) {
 				try {
+					// 获取bd
 					RootBeanDefinition mbd = getMergedLocalBeanDefinition(beanName);
 					// Only check bean definition if it is complete.
 					if (!mbd.isAbstract() && (allowEagerInit ||
@@ -527,6 +536,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 						boolean matchFound = false;
 						boolean allowFactoryBeanInit = allowEagerInit || containsSingleton(beanName);
 						boolean isNonLazyDecorated = dbd != null && !mbd.isLazyInit();
+						// 当前bean 不是
 						if (!isFactoryBean) {
 							if (includeNonSingletons || isSingleton(beanName, mbd, dbd)) {
 								matchFound = isTypeMatch(beanName, type, allowFactoryBeanInit);
@@ -1198,6 +1208,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		// if candidateNames.length == 1 表示当前bean没有别名
 		if (candidateNames.length == 1) {
 			String beanName = candidateNames[0];
+			// 调用getBean
 			return new NamedBeanHolder<>(beanName, (T) getBean(beanName, requiredType.toClass(), args));
 		}
 		else if (candidateNames.length > 1) {

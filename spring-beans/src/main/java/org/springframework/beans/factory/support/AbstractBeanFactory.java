@@ -199,6 +199,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 
 	@Override
 	public Object getBean(String name) throws BeansException {
+		// 继续调用doGetBean
 		return doGetBean(name, null, null, false);
 	}
 
@@ -247,8 +248,9 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		Object bean;
 
 		// Eagerly check singleton cache for manually registered singletons.
-		// 从容器当中过去Bean
-		// 第一次调用这个方法是肯定为空
+		// 第一次调用getSingleton，此时从三个map中获取
+		// 如果此时是初始化对象，那么此时返回三个map中不存在对象，此时返回null
+		// 如果此时对象已经初始化完成，那么容器中已经存在当前对象，那么此时不为空
 		Object sharedInstance = getSingleton(beanName);
 
 		if (sharedInstance != null && args == null) {
@@ -275,6 +277,10 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			}
 
 			// Check if bean definition exists in this factory.
+
+			// 获取parentBeanFactory
+			// 这边有个父子容器的概念，详见spring mvc父子容器
+			// 如果父容器中包含当前bean，直接调用父容器的getBean()
 			BeanFactory parentBeanFactory = getParentBeanFactory();
 			if (parentBeanFactory != null && !containsBeanDefinition(beanName)) {
 				// Not found -> check parent.
@@ -301,13 +307,15 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			}
 
 			try {
-				// 合并bd
+				// 获取合并的bd
 				final RootBeanDefinition mbd = getMergedLocalBeanDefinition(beanName);
 
 				// 检查合并后的bd,如果bd isAbstract，报错
 				checkMergedBeanDefinition(mbd, beanName, args);
 
 				// Guarantee initialization of beans that the current bean depends on.
+
+				// 处理@DependsOn注解
 				String[] dependsOn = mbd.getDependsOn();
 				if (dependsOn != null) {
 					for (String dep : dependsOn) {
@@ -317,6 +325,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 						}
 						registerDependentBean(dep, beanName);
 						try {
+							// getBean() 获取DependsOn对象
 							getBean(dep);
 						}
 						catch (NoSuchBeanDefinitionException ex) {
@@ -330,6 +339,8 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				// 判断当前是否单例
 				if (mbd.isSingleton()) {
 					// 再一次调用getSingleton,这边的getSingleton和前面的getSingleton不是同一个方法
+					// 这边的getSingleton 是先从singletonObjects获取，获取不到就直接调用singletonFactory方法获取。
+					// 其实就是直接调用下面的createBean方法创建对象
 					sharedInstance = getSingleton(beanName, () -> {
 						try {
 							return createBean(beanName, mbd, args);
