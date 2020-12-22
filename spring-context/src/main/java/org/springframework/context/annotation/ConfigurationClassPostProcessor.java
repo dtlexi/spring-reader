@@ -225,11 +225,6 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	/**
 	 * Derive further bean definitions from the configuration classes in the registry.
 	 */
-
-	/**
-	 *
-	 *
-	 */
 	@Override
 	public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) {
 		int registryId = System.identityHashCode(registry);
@@ -243,6 +238,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		}
 		this.registriesPostProcessed.add(registryId);
 
+		// 处理配置类
 		processConfigBeanDefinitions(registry);
 	}
 
@@ -270,8 +266,9 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			// Simply call processConfigurationClasses lazily at this point then.
 			processConfigBeanDefinitions((BeanDefinitionRegistry) beanFactory);
 		}
-
+		// 给配置类添加代理
 		enhanceConfigurationClasses(beanFactory);
+		// 添加后置处理器
 		beanFactory.addBeanPostProcessor(new ImportAwareBeanPostProcessor(beanFactory));
 	}
 
@@ -285,6 +282,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		// 获取当前所有的bd name 此时因为还没有开始初始化，
 		// 此时容器中的bd只有spring 开天辟地的几个db。
 		// 还有我们自己实例化context对象是传递的SpringConfig类
+		// 这边其实就是解析我们自己传递的Spring Config类
 		String[] candidateNames = registry.getBeanDefinitionNames();
 
 		//循环遍历所有candidateName
@@ -403,6 +401,8 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 						registry, this.sourceExtractor, this.resourceLoader, this.environment,
 						this.importBeanNameGenerator, parser.getImportRegistry());
 			}
+
+			// 加载bd，将bd注入到registry中去
 			this.reader.loadBeanDefinitions(configClasses);
 			alreadyParsed.addAll(configClasses);
 
@@ -420,6 +420,8 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 
 			// 这边只有一种情况
 			// ImportBeanDefinitionRegister 在其中注册的bd，没有被配置文件解析过，如果其中包含@Bean...，
+			// 这么此时对呀的class是一个配置类，而且没有被扫解析
+			// 此时需要解析爱当前类
 			if (registry.getBeanDefinitionCount() > candidateNames.length) {
 				// 当前仓库中所有的bd
 				String[] newCandidateNames = registry.getBeanDefinitionNames();
@@ -471,6 +473,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		// 定义一个map，用来放加了@Configuration注解的类
 		// 因为加了@Configuration注解的类，Spring默认会给它加上代理
 		Map<String, AbstractBeanDefinition> configBeanDefs = new LinkedHashMap<>();
+		// 循环遍历
 		for (String beanName : beanFactory.getBeanDefinitionNames()) {
 			BeanDefinition beanDef = beanFactory.getBeanDefinition(beanName);
 			// 获取当前bd的configurationClass属性 lite/full

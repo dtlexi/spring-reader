@@ -25,6 +25,13 @@ public class Reader {
 
 		System.out.println(context.getBean(Postman.class));
 		System.out.println(jdkDynamicAopService);
+
+		SpringConfig config=context.getBean(SpringConfig.class);
+		config.createHelloServiceCreateByAnnoBean();
+
+
+		config.test();
+
 	}
 }
 

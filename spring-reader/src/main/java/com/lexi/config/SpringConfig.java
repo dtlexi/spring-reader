@@ -16,4 +16,9 @@ public class SpringConfig {
 	{
 		return new HelloServiceCreateByAnnoBean();
 	}
+
+	public void test()
+	{
+		this.createHelloServiceCreateByAnnoBean();
+	}
 }

@@ -133,6 +133,7 @@ class ConfigurationClassEnhancer {
 		// 代理对象名字生成策略
 		enhancer.setNamingPolicy(SpringNamingPolicy.INSTANCE);
 		enhancer.setStrategy(new BeanFactoryAwareGeneratorStrategy(classLoader));
+		// ConditionalCallbackFilter
 		enhancer.setCallbackFilter(CALLBACK_FILTER);
 		// BeanMethodInterceptor
 		enhancer.setCallbackTypes(CALLBACK_FILTER.getCallbackTypes());
