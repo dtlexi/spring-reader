@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 import java.util.List;
 
-@Component
+@Component("helloService")
 public class HelloService implements IHelloService {
 	@Value("lexi")
 	String name;

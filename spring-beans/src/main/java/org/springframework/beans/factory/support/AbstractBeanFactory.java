@@ -534,25 +534,33 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			throws NoSuchBeanDefinitionException {
 
 		String beanName = transformedBeanName(name);
+		// 判断获取的是FactoryBean产生的对象还是FactoryBean对象本身
 		boolean isFactoryDereference = BeanFactoryUtils.isFactoryDereference(name);
 
-		// Check manually registered singletons.
+		// getSingleton 获取对象
 		Object beanInstance = getSingleton(beanName, false);
+		// beanInstance 不为空，表示当前是单例，并且已经实例化
 		if (beanInstance != null && beanInstance.getClass() != NullBean.class) {
+			// 当前对象是否是FactoryBean
 			if (beanInstance instanceof FactoryBean) {
+				// 是获取FactoryBean对象产生的类
 				if (!isFactoryDereference) {
+					// 获取当前factory bean对象getObjectType类型
 					Class<?> type = getTypeForFactoryBean((FactoryBean<?>) beanInstance);
 					return (type != null && typeToMatch.isAssignableFrom(type));
 				}
 				else {
+					// 获取FactoryBean对象本身
 					return typeToMatch.isInstance(beanInstance);
 				}
 			}
+			// 如果当前bean name 不存在&
 			else if (!isFactoryDereference) {
 				if (typeToMatch.isInstance(beanInstance)) {
 					// Direct match for exposed instance?
 					return true;
 				}
+				// 当前获取的类型有反向，并且容器中存在当前bd
 				else if (typeToMatch.hasGenerics() && containsBeanDefinition(beanName)) {
 					// Generics potentially only match on the target class, not on the proxy...
 					RootBeanDefinition mbd = getMergedLocalBeanDefinition(beanName);
@@ -582,17 +590,22 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		}
 
 		// No singleton instance found -> check bean definition.
+		// 父容器中获取
 		BeanFactory parentBeanFactory = getParentBeanFactory();
 		if (parentBeanFactory != null && !containsBeanDefinition(beanName)) {
 			// No bean definition found in this factory -> delegate to parent.
 			return parentBeanFactory.isTypeMatch(originalBeanName(name), typeToMatch);
 		}
 
-		// Retrieve corresponding bean definition.
+		// 上面比较的是当前bean已经被实例化，并且存储在容器中
+
+		// 下面则比较是的如果是多例或者bean还没有被实例化时
 		RootBeanDefinition mbd = getMergedLocalBeanDefinition(beanName);
 		BeanDefinitionHolder dbd = mbd.getDecoratedDefinition();
 
 		// Setup the types that we want to match against
+
+		// 获取当前需要寻找的class
 		Class<?> classToMatch = typeToMatch.resolve();
 		if (classToMatch == null) {
 			classToMatch = FactoryBean.class;
@@ -602,11 +615,16 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 
 
 		// Attempt to predict the bean type
+
+		// 下面就是根据类型判断。判断bd对应的类型和需要找到的类型是否匹配
 		Class<?> predictedType = null;
 
 		// We're looking for a regular reference but we're a factory bean that has
 		// a decorated bean definition. The target bean should be the same type
 		// as FactoryBean would ultimately return.
+
+
+		//
 		if (!isFactoryDereference && dbd != null && isFactoryBean(beanName, mbd)) {
 			// We should only attempt if the user explicitly set lazy-init to true
 			// and we know the merged bean definition is for a factory bean.
