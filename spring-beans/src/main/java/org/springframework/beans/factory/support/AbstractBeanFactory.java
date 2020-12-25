@@ -560,7 +560,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 					// Direct match for exposed instance?
 					return true;
 				}
-				// 当前获取的类型有反向，并且容器中存在当前bd
+				// 当前获取的类型有泛型，并且容器中存在当前bd
 				else if (typeToMatch.hasGenerics() && containsBeanDefinition(beanName)) {
 					// Generics potentially only match on the target class, not on the proxy...
 					RootBeanDefinition mbd = getMergedLocalBeanDefinition(beanName);
