@@ -164,6 +164,10 @@ class TypeConverterDelegate {
 			 * "String->Integer" 	×
 			 * "String->Number"		√
 			 * 此时就找到了对应的converter，这边的Converter是GenericConverter
+			 * 这边的GenericConverter有多种类型
+			 * 	1. ConverterFactoryAdapter
+			 * 	2. ConverterAdapter
+			 * 	3. 普通的GenericConverter
 			 */
 			if (conversionService.canConvert(sourceTypeDesc, typeDescriptor)) {
 				try {
