@@ -368,7 +368,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			 * 	scanner中会将扫描的bd添加到registry中
 			 *
 			 * @Import
-			 * 	1. ImportBeanDefinition
+			 * 	1. ImportBeanDefinitionRegistrar
 			 * 		实例化ImportBeanDefinition，并且将当前对象添加到配置类中去
 			 * 		将会在下面的loadBeanDefinitions方法中被执行
 			 * 	2. ImportSelector

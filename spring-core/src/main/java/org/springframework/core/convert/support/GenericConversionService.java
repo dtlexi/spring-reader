@@ -142,6 +142,7 @@ public class GenericConversionService implements ConfigurableConversionService {
 		if (sourceType == null) {
 			return true;
 		}
+		// 找到对应的GenericConverter
 		GenericConverter converter = getConverter(sourceType, targetType);
 		return (converter != null);
 	}
@@ -507,6 +508,7 @@ public class GenericConversionService implements ConfigurableConversionService {
 
 		private final Set<GenericConverter> globalConverters = new LinkedHashSet<>();
 
+		// 可以简单理解为Map<String,List<GenericConverter>>
 		private final Map<ConvertiblePair, ConvertersForPair> converters = new LinkedHashMap<>(36);
 
 		public void add(GenericConverter converter) {
@@ -550,6 +552,7 @@ public class GenericConversionService implements ConfigurableConversionService {
 				// 循环遍历target的class和他的父类
 				for (Class<?> targetCandidate : targetCandidates) {
 					// 封装
+					// 可以简单理解成一个字符串	"String->Number"
 					ConvertiblePair convertiblePair = new ConvertiblePair(sourceCandidate, targetCandidate);
 					// 找到一个合适的converter
 					GenericConverter converter = getRegisteredConverter(sourceType, targetType, convertiblePair);
@@ -566,8 +569,17 @@ public class GenericConversionService implements ConfigurableConversionService {
 				TypeDescriptor targetType, ConvertiblePair convertiblePair) {
 
 			// Check specifically registered converters
+
+			// 从map中获取数据
+			// this.converters 是一个map,可以简单理解为Map<String,List<GenericConverter>>
+			// 这边的ConvertersForPair 可以简单理解为List<GenericConverter>
 			ConvertersForPair convertersForPair = this.converters.get(convertiblePair);
 			if (convertersForPair != null) {
+				// 循环遍历List<GenericConverter>，调用match方法
+				// 找到一个合适的GenericConverter
+				// 这边有俩个特殊的Converter
+				// 1. ConverterFactoryAdapter
+				// 2. ConverterAdapter
 				GenericConverter converter = convertersForPair.getConverter(sourceType, targetType);
 				if (converter != null) {
 					return converter;

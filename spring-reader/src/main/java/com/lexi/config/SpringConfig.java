@@ -3,6 +3,9 @@ package com.lexi.config;
 import com.lexi.importDemo.ImportBeanDefinitionRegistrarDemo;
 import com.lexi.importDemo.ImportSelectorDemo;
 import com.lexi.service.annoBean.HelloServiceCreateByAnnoBean;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.context.annotation.*;
 
 @Configuration
@@ -10,8 +13,8 @@ import org.springframework.context.annotation.*;
 @EnableAspectJAutoProxy(proxyTargetClass = false,exposeProxy = true)
 @ImportResource("classpath:beans.xml")
 @Import(ImportBeanDefinitionRegistrarDemo.class)
-public class SpringConfig {
-	@Bean
+public class SpringConfig implements BeanFactoryAware {
+//	@Bean
 	public HelloServiceCreateByAnnoBean createHelloServiceCreateByAnnoBean()
 	{
 		return new HelloServiceCreateByAnnoBean();
@@ -20,5 +23,10 @@ public class SpringConfig {
 	public void test()
 	{
 		this.createHelloServiceCreateByAnnoBean();
+	}
+
+	@Override
+	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+		
 	}
 }

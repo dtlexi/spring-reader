@@ -136,6 +136,7 @@ class ConfigurationClassEnhancer {
 		// ConditionalCallbackFilter
 		enhancer.setCallbackFilter(CALLBACK_FILTER);
 		// BeanMethodInterceptor
+		// BeanFactoryAwareMethodInterceptor
 		enhancer.setCallbackTypes(CALLBACK_FILTER.getCallbackTypes());
 		return enhancer;
 	}

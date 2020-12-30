@@ -33,6 +33,7 @@
 
 	<bean id="helloServiceCreateByFactory" factory-bean="helloServiceFactory" factory-method="createHelloServiceCreateByFactory" autowire="constructor">
 		<constructor-arg name="age" value="1"></constructor-arg>
+		<constructor-arg name="helloService" ref="helloServiceByXml"></constructor-arg>
 	</bean>
 
 	<bean id="helloServiceWithLookupByXml" class="com.lexi.service.xml.HelloServiceWithLookupByXml">

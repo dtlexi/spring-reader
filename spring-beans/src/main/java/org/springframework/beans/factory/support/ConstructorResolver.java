@@ -480,7 +480,8 @@ class ConstructorResolver {
 		/**
 		 * factory method 原理很简单：factoryMethod.invoke(factoryBean, args);
 		 * 1、 factoryMethod：创建对象的方法
-		 * 2、 factoryBean：factoryMethod所在的对象，如果factoryBean is null，表示当前factoryMethod是静态方法
+		 * 2、 factoryBean：factoryMethod所在的对象，
+		 * 		如果当前factoryMethod是静态方法，factoryBean直接为null即可
 		 * 3、 args：factoryMethod对应的参数
 		 */
 
@@ -657,8 +658,11 @@ class ConstructorResolver {
 			 * 2、 autowire_constructor
 			 * 	<bean id="helloServiceCreateByFactory" factory-bean="helloServiceFactory" factory-method="createHelloServiceCreateByFactory" autowire="constructor">
 			 * 	</bean>
-			 *
-			 * @Bean不会出现在这边，下面具体分析这俩种情况
+			 * 3. @Bean
+			 * 	public FactoryMethodObject createFactoryMethodObject2(HelloService helloService)
+			 *  {
+			 * 		return  new FactoryMethodObject();
+			 *  }
 			 */
 			for (Method candidate : candidates) {
 				// 当前method 参数个数

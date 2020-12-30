@@ -2,6 +2,7 @@ package com.lexi.service.xml;
 
 import com.lexi.service.HelloService;
 import com.lexi.service.HelloServiceAutowired2;
+import com.lexi.service.IHelloService;
 import com.lexi.service.autowire.HelloServiceAutowireByName;
 import com.lexi.service.other.Person;
 import org.springframework.beans.factory.InitializingBean;
@@ -12,7 +13,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.util.List;
 
-public class HelloServiceByXml {
+public class HelloServiceByXml implements IHelloService {
 	public String getName() {
 		return name;
 	}

@@ -143,7 +143,6 @@ class ConfigurationClassBeanDefinitionReader {
 		// 2. @Import(CommonClass): import 普通类
 		// 3. 内部类被导入时
 		if (configClass.isImported()) {
-
 			// 初始化bd 并且设置属性
 			registerBeanDefinitionForImportedConfigurationClass(configClass);
 		}

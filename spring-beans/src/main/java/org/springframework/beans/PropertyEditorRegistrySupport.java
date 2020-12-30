@@ -188,7 +188,9 @@ public class PropertyEditorRegistrySupport implements PropertyEditorRegistry {
 				return editor;
 			}
 		}
+		// 如果默认为空
 		if (this.defaultEditors == null) {
+			// 创建
 			createDefaultEditors();
 		}
 		return this.defaultEditors.get(requiredType);
@@ -198,6 +200,8 @@ public class PropertyEditorRegistrySupport implements PropertyEditorRegistry {
 	 * Actually register the default editors for this registry instance.
 	 */
 	private void createDefaultEditors() {
+		// Map<Class<?>, PropertyEditor>
+		// 用来存储PropertyEditor
 		this.defaultEditors = new HashMap<>(64);
 
 		// Simple editors, without parameterization capabilities.

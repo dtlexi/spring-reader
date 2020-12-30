@@ -115,10 +115,25 @@ class TypeConverterDelegate {
 	public <T> T convertIfNecessary(@Nullable String propertyName, @Nullable Object oldValue, @Nullable Object newValue,
 			@Nullable Class<T> requiredType, @Nullable TypeDescriptor typeDescriptor) throws IllegalArgumentException {
 
+		/**
+		 * 测试代码如下：
+		 * SimpleTypeConverter simpleTypeConverter=new SimpleTypeConverter();// 实例化一个SimpleTypeConverter
+		 * simpleTypeConverter.registerCustomEditor(Integer.class,new TestPropertyEditor());	// 注册Customer PropertyEditor
+		 * simpleTypeConverter.registerCustomEditor(int.class,new TestPropertyEditor());	// 注册Customer PropertyEditor
+		 *
+		 * simpleTypeConverter.setConversionService(new DefaultConversionService());	// 注册ConversionService
+		 *
+		 * System.out.println(simpleTypeConverter.convertIfNecessary("1",int.class));	// 类型转换
+		 * System.out.println(simpleTypeConverter.convertIfNecessary("1,2,3,5,4",String[].class));  // 类型转换
+		 */
+
+
 		// Custom editor for this type?
 		// 原生的Java是有一个可以提供数据转换功能的工具
 		// PropertyEditor
-		// 但是它的功能有限，它只能将字符串转换为一个Java对象
+
+		// 这边是获取自定义的PropertyEditor
+		// simpleTypeConverter.registerCustomEditor(int.class,new TestPropertyEditor());
 		PropertyEditor editor = this.propertyEditorRegistry.findCustomEditor(requiredType, propertyName);
 
 		ConversionFailedException conversionAttemptEx = null;
@@ -128,6 +143,7 @@ class TypeConverterDelegate {
 		// ConversionService
 		// Spring Mvc这边默认是初始化时注册的DefaultConversionService
 		ConversionService conversionService = this.propertyEditorRegistry.getConversionService();
+		// 如果没有自定义PropertyEditor并且存在ConversionService
 		if (editor == null && conversionService != null && newValue != null && typeDescriptor != null) {
 			// 实际传递的数据类型
 			TypeDescriptor sourceTypeDesc = TypeDescriptor.forObject(newValue);
@@ -147,7 +163,7 @@ class TypeConverterDelegate {
 			 * 此时来个双层for循环，到map中去寻找
 			 * "String->Integer" 	×
 			 * "String->Number"		√
-			 * 此时就找到了对应的converter
+			 * 此时就找到了对应的converter，这边的Converter是GenericConverter
 			 */
 			if (conversionService.canConvert(sourceTypeDesc, typeDescriptor)) {
 				try {
@@ -162,13 +178,10 @@ class TypeConverterDelegate {
 		}
 
 
-		// 因为spring自带了很多常见类型的转换器，大部分都可以通过上面的转换器完成。
-		// 程序运行到这里没有结束的话很可能说明类型是没有定义转换器的自定义类型或者参数格式真的不正确
+
+		// 如果不存在conversionService或者conversionService没有解决问题
 
 		Object convertedValue = newValue;
-
-		// Value not of required type?
-
 		// 利用PropertyEditor解析数据
 		if (editor != null || (requiredType != null && !ClassUtils.isAssignableValue(requiredType, convertedValue))) {
 			if (typeDescriptor != null && requiredType != null && Collection.class.isAssignableFrom(requiredType) &&
@@ -182,8 +195,10 @@ class TypeConverterDelegate {
 				}
 			}
 			if (editor == null) {
+				// 获取默认PropertyEditor
 				editor = findDefaultEditor(requiredType);
 			}
+			// 使用PropertyEditor进行类型转换
 			convertedValue = doConvertValue(oldValue, convertedValue, requiredType, editor);
 		}
 
@@ -366,6 +381,7 @@ class TypeConverterDelegate {
 		PropertyEditor editor = null;
 		if (requiredType != null) {
 			// No custom editor -> check BeanWrapperImpl's default editors.
+			// 获取默认propertyEditor
 			editor = this.propertyEditorRegistry.getDefaultEditor(requiredType);
 			if (editor == null && String.class != requiredType) {
 				// No BeanWrapper default editor -> check standard JavaBean editor.
@@ -398,7 +414,11 @@ class TypeConverterDelegate {
 			// we just want to allow special PropertyEditors to override setValue
 			// for type conversion from non-String values to the required type.
 			try {
+				// 调用set value就行转换
+				// 比如Float->Inter
+				// 只要在setValue中做好类型判断就行
 				editor.setValue(convertedValue);
+				// 获取值
 				Object newConvertedValue = editor.getValue();
 				if (newConvertedValue != convertedValue) {
 					convertedValue = newConvertedValue;
@@ -427,6 +447,7 @@ class TypeConverterDelegate {
 			convertedValue = StringUtils.arrayToCommaDelimitedString((String[]) convertedValue);
 		}
 
+		// 如果是String类型
 		if (convertedValue instanceof String) {
 			if (editor != null) {
 				// Use PropertyEditor's setAsText in case of a String value.
@@ -434,6 +455,7 @@ class TypeConverterDelegate {
 					logger.trace("Converting String to [" + requiredType + "] using property editor [" + editor + "]");
 				}
 				String newTextValue = (String) convertedValue;
+				// 调用setAsText就行转换
 				return doConvertTextValue(oldValue, newTextValue, editor);
 			}
 			else if (String.class == requiredType) {
