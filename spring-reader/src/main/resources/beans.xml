@@ -45,4 +45,10 @@
 	<bean id="helloServiceAutowireByName" class="com.lexi.service.autowire.HelloServiceAutowireByName" autowire="byName"></bean>
 	<bean id="helloServiceAutowireByType" class="com.lexi.service.autowire.HelloServiceAutowireByType" autowire="byType"></bean>
 
+
+	<bean id="helloServiceByXml2" class="com.lexi.service.xml.HelloServiceByXml2">
+		<property name="name" value="张三"></property>
+		<property name="age" value="18"></property>
+		<property name="helloServiceByXml" ref="helloServiceByXml"></property>
+	</bean>
 </beans>

@@ -53,6 +53,14 @@ public interface GenericConverter {
 	 * <p>For {@link ConditionalConverter conditional converters} this method may return
 	 * {@code null} to indicate all source-to-target pairs should be considered.
 	 */
+
+	/**
+	 * getConvertibleTypes 返回的是支持类型
+	 * 表示当前Converter支持转换从什么类型到什么类型之间的转换
+	 * 比如String->Number
+	 * spring会在注册Converter是调用这个方法，获取类型，注册到一个map中去
+	 * @return
+	 */
 	@Nullable
 	Set<ConvertiblePair> getConvertibleTypes();
 
@@ -62,6 +70,14 @@ public interface GenericConverter {
 	 * @param sourceType the type descriptor of the field we are converting from
 	 * @param targetType the type descriptor of the field we are converting to
 	 * @return the converted object
+	 */
+
+	/**
+	 * 转换
+	 * @param source
+	 * @param sourceType
+	 * @param targetType
+	 * @return
 	 */
 	@Nullable
 	Object convert(@Nullable Object source, TypeDescriptor sourceType, TypeDescriptor targetType);

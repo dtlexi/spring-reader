@@ -22,6 +22,5 @@ public class TestBeanDefinitionReg implements BeanDefinitionRegistryPostProcesso
 
 	@Override
 	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-
 	}
 }

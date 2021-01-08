@@ -116,6 +116,7 @@ public class GenericConversionService implements ConfigurableConversionService {
 			throw new IllegalArgumentException("Unable to determine source type <S> and target type <T> for your " +
 					"ConverterFactory [" + factory.getClass().getName() + "]; does the class parameterize those types?");
 		}
+		// 注册
 		addConverter(new ConverterFactoryAdapter(factory,
 				new ConvertiblePair(typeInfo[0].toClass(), typeInfo[1].toClass())));
 	}
@@ -263,6 +264,8 @@ public class GenericConversionService implements ConfigurableConversionService {
 		}
 
 		// 真正获取converter
+		// private final Converters converters = new Converters();
+		// 这边的converters相当于一个仓库
 		converter = this.converters.find(sourceType, targetType);
 		if (converter == null) {
 			converter = getDefaultConverter(sourceType, targetType);
@@ -350,6 +353,7 @@ public class GenericConversionService implements ConfigurableConversionService {
 	@SuppressWarnings("unchecked")
 	private final class ConverterAdapter implements ConditionalGenericConverter {
 
+		// Converter
 		private final Converter<Object, Object> converter;
 
 		private final ConvertiblePair typeInfo;
@@ -362,6 +366,10 @@ public class GenericConversionService implements ConfigurableConversionService {
 			this.targetType = targetType;
 		}
 
+		/**
+		 * 支持转换类型
+		 * @return
+		 */
 		@Override
 		public Set<ConvertiblePair> getConvertibleTypes() {
 			return Collections.singleton(this.typeInfo);
@@ -383,6 +391,7 @@ public class GenericConversionService implements ConfigurableConversionService {
 					((ConditionalConverter) this.converter).matches(sourceType, targetType);
 		}
 
+		// 转换
 		@Override
 		@Nullable
 		public Object convert(@Nullable Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
@@ -571,7 +580,9 @@ public class GenericConversionService implements ConfigurableConversionService {
 			// Check specifically registered converters
 
 			// 从map中获取数据
-			// this.converters 是一个map,可以简单理解为Map<String,List<GenericConverter>>
+			// this.converters 是一个map
+			// private final Map<ConvertiblePair, ConvertersForPair> converters = new LinkedHashMap<>(36);
+			// 可以简单理解为Map<String,List<GenericConverter>>
 			// 这边的ConvertersForPair 可以简单理解为List<GenericConverter>
 			ConvertersForPair convertersForPair = this.converters.get(convertiblePair);
 			if (convertersForPair != null) {
@@ -681,7 +692,11 @@ public class GenericConversionService implements ConfigurableConversionService {
 
 		@Nullable
 		public GenericConverter getConverter(TypeDescriptor sourceType, TypeDescriptor targetType) {
+			// this.converters是一个集合
+			// private final LinkedList<GenericConverter> converters = new LinkedList<>()
 			for (GenericConverter converter : this.converters) {
+				// 如果实现了ConditionalGenericConverter，调用match方法
+				// 如果没有实现，直接返回
 				if (!(converter instanceof ConditionalGenericConverter) ||
 						((ConditionalGenericConverter) converter).matches(sourceType, targetType)) {
 					return converter;

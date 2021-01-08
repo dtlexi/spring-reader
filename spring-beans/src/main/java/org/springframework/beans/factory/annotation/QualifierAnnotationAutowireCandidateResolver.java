@@ -144,8 +144,10 @@ public class QualifierAnnotationAutowireCandidateResolver extends GenericTypeAwa
 	 */
 	@Override
 	public boolean isAutowireCandidate(BeanDefinitionHolder bdHolder, DependencyDescriptor descriptor) {
+		// 检查当前bd是否支持依赖注入
 		boolean match = super.isAutowireCandidate(bdHolder, descriptor);
 		if (match) {
+			// 检查Qualifiers
 			match = checkQualifiers(bdHolder, descriptor.getAnnotations());
 			if (match) {
 				MethodParameter methodParam = descriptor.getMethodParameter();
@@ -168,6 +170,7 @@ public class QualifierAnnotationAutowireCandidateResolver extends GenericTypeAwa
 			return true;
 		}
 		SimpleTypeConverter typeConverter = new SimpleTypeConverter();
+		// 循环遍历所有当前所有注解
 		for (Annotation annotation : annotationsToSearch) {
 			Class<? extends Annotation> type = annotation.annotationType();
 			boolean checkMeta = true;
@@ -279,6 +282,8 @@ public class QualifierAnnotationAutowireCandidateResolver extends GenericTypeAwa
 				// Fall back on bean definition attribute
 				actualValue = bd.getAttribute(attributeName);
 			}
+			// actualValue 不等空 && attributeName=value && expectedValue是String类型 && 当前bean name==expectedValue
+			// 这边就是判断bean name=@Qualifier的value
 			if (actualValue == null && attributeName.equals(AutowireCandidateQualifier.VALUE_KEY) &&
 					expectedValue instanceof String && bdHolder.matchesName((String) expectedValue)) {
 				// Fall back on bean name (or alias) match

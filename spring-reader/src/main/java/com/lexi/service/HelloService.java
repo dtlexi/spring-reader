@@ -36,13 +36,19 @@ public class HelloService implements IHelloService {
 	}
 
 
+	@Lazy
 	@Resource(name = "helloServiceAutowired2")
 	private HelloServiceAutowired2 helloServiceAutowired2;
 
 
+
 	@Autowired
-	@Qualifier("helloServiceAutowired1")
-	private IHelloServiceAutowired helloServiceAutowired;
+//	@Qualifier("helloServiceAutowired1")
+	private IHelloServiceAutowired helloServiceAutowired1;
+
+
+	@Autowired
+	private List<IHelloServiceAutowired> helloServiceAutowiredList;
 
 //	@Override
 //	public String toString() {

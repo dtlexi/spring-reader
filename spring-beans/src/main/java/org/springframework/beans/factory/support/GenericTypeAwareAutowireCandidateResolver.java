@@ -62,10 +62,12 @@ public class GenericTypeAwareAutowireCandidateResolver extends SimpleAutowireCan
 
 	@Override
 	public boolean isAutowireCandidate(BeanDefinitionHolder bdHolder, DependencyDescriptor descriptor) {
+		// 检查bd是否支持 isAutowireCandidate，这边默认为true
 		if (!super.isAutowireCandidate(bdHolder, descriptor)) {
 			// If explicitly false, do not proceed with any other checks...
 			return false;
 		}
+		// 检查泛型
 		return checkGenericTypeMatch(bdHolder, descriptor);
 	}
 

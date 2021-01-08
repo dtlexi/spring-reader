@@ -762,6 +762,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	public boolean isAutowireCandidate(String beanName, DependencyDescriptor descriptor)
 			throws NoSuchBeanDefinitionException {
 
+		// 判断是否是注入的候选对象
 		return isAutowireCandidate(beanName, descriptor, getAutowireCandidateResolver());
 	}
 
@@ -778,16 +779,17 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
 		// 获取bd name
 		String beanDefinitionName = BeanFactoryUtils.transformedBeanName(beanName);
-		// 是否存在当前beanDefintion
+		// 是否存在当前beanDefinition
 		if (containsBeanDefinition(beanDefinitionName)) {
 			return isAutowireCandidate(beanName, getMergedLocalBeanDefinition(beanDefinitionName), descriptor, resolver);
 		}
 		// 是否存在当前bean
+		// 这边指的是我们自己注册的bd beanFactory.addSingleton()
 		else if (containsSingleton(beanName)) {
 			return isAutowireCandidate(beanName, new RootBeanDefinition(getType(beanName)), descriptor, resolver);
 		}
 
-		// 检查parent
+		// 检查是不是父bd对象
 		BeanFactory parent = getParentBeanFactory();
 		if (parent instanceof DefaultListableBeanFactory) {
 			// No bean definition found in this factory -> delegate to parent.
@@ -814,8 +816,13 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	protected boolean isAutowireCandidate(String beanName, RootBeanDefinition mbd,
 			DependencyDescriptor descriptor, AutowireCandidateResolver resolver) {
 
+		// 获取bd name
 		String beanDefinitionName = BeanFactoryUtils.transformedBeanName(beanName);
+		// 不清楚这一步干嘛
+		// 确定当前bean 存在class?
 		resolveBeanClass(mbd, beanDefinitionName);
+
+		// 不知道干嘛的
 		if (mbd.isFactoryMethodUnique && mbd.factoryMethodToIntrospect == null) {
 			new ConstructorResolver(this).resolveFactoryMethodIfPossible(mbd);
 		}
@@ -823,6 +830,9 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 				this.mergedBeanDefinitionHolders.computeIfAbsent(beanName,
 						key -> new BeanDefinitionHolder(mbd, beanName, getAliases(beanDefinitionName))) :
 				new BeanDefinitionHolder(mbd, beanName, getAliases(beanDefinitionName)));
+
+		// resolver 是在spring阶段添加的 ContextAnnotationAutowireCandidateResolver 实现了 QualifierAnnotationAutowireCandidateResolver
+		// 所以这边就是判断Qualifier
 		return resolver.isAutowireCandidate(holder, descriptor);
 	}
 
@@ -1405,7 +1415,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
 			// 找到多个时
 			if (matchingBeans.size() > 1) {
-				// @Primary -> @Priority -> 方法名称或字段名称匹配
+				// @Primary -> @Priority -> 方法名称和待注入字段名称相同
 				autowiredBeanName = determineAutowireCandidate(matchingBeans, descriptor);
 				if (autowiredBeanName == null) {
 					// 如果找不到，并且required=true 报错
@@ -1645,8 +1655,8 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		for (String candidate : candidateNames) {
 			// !isSelfReference(beanName, candidate) 判断当前需要注入的对象和目前正在创建的对象不是同一个类
 			// isAutowireCandidate(candidate, descriptor) 检查当前是否是注入候选对象
-			// 		1. 检查是否存在当前name=candidate的beanDefintion
-			//		2. 检查是否满足@Qualifier注解
+			// 		1. 检查当前bd是否支持注入
+			//		2. 检查是否满足@Qualifier注解（循环当前注解，看看是否存在Qualifier注解，如果存在，看看是否满足name）
 			if (!isSelfReference(beanName, candidate) && isAutowireCandidate(candidate, descriptor)) {
 
 				// 这边分为俩种情况

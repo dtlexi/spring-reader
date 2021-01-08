@@ -14,7 +14,7 @@ import org.springframework.context.annotation.*;
 @ImportResource("classpath:beans.xml")
 @Import(ImportBeanDefinitionRegistrarDemo.class)
 public class SpringConfig implements BeanFactoryAware {
-//	@Bean
+	@Bean
 	public HelloServiceCreateByAnnoBean createHelloServiceCreateByAnnoBean()
 	{
 		return new HelloServiceCreateByAnnoBean();

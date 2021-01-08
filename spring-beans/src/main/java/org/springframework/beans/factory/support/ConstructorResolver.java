@@ -876,6 +876,7 @@ class ConstructorResolver {
 		}
 
 		// 循环遍历GenericArguments
+		// 通用参数
 		for (ConstructorArgumentValues.ValueHolder valueHolder : cargs.getGenericArgumentValues()) {
 			if (valueHolder.isConverted()) {
 				resolvedValues.addGenericArgumentValue(valueHolder);
@@ -918,7 +919,7 @@ class ConstructorResolver {
 		Set<ConstructorArgumentValues.ValueHolder> usedValueHolders = new HashSet<>(paramTypes.length);
 		Set<String> autowiredBeanNames = new LinkedHashSet<>(4);
 
-		// 循环参数
+		// 循环遍历当前所有参数
 		for (int paramIndex = 0; paramIndex < paramTypes.length; paramIndex++) {
 			// 拿到参数类型
 			Class<?> paramType = paramTypes[paramIndex];
