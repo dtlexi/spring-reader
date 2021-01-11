@@ -4,6 +4,7 @@ import com.lexi.config.SpringConfig;
 import com.lexi.edit.TestPropertyEditor;
 import com.lexi.properties.Postman;
 import com.lexi.service.autowire.HelloServiceAutowireByType;
+import com.lexi.service.conditional.ConditionalB;
 import com.lexi.service.factory.FactoryBeanObject;
 import com.lexi.service.factory.TestFactoryBean;
 import com.lexi.service.jdkDynamicAopService.IJdkDynamicAopService;
@@ -49,6 +50,9 @@ public class Reader {
 		IHelloServiceAutowired helloServiceAutowired=context.getBean(IHelloServiceAutowired.class);
 
 		HelloServicePrototype helloServicePrototype=context.getBean(HelloServicePrototype.class);
+
+		ConditionalB conditionalB=context.getBean(ConditionalB.class);
+		System.out.println(conditionalB);
 	}
 
 //	public static void main(String[] args) {
