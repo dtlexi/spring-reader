@@ -13,8 +13,6 @@ public class ConditionalOnBean implements Condition {
 	@Override
 	public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
 		Map<String,Object> attrs= metadata.getAnnotationAttributes(com.lexi.service.conditional.anno.ConditionalOnBean.class.getName());
-//		if(context.getBeanFactory().containsBean(""))
-
 		Class<? extends Object> type= (Class<? extends Object>) attrs.get("value");
 		String[] beanNames= context.getBeanFactory().getBeanNamesForType(type);
 
@@ -26,9 +24,6 @@ public class ConditionalOnBean implements Condition {
 				return true;
 			}
 		}
-
-
-
 		return  false;
 	}
 }

@@ -26,7 +26,7 @@ public class Reader {
 
 //		HelloServiceAutowired1 helloServiceAutowired1=context.getBean(HelloServiceAutowired1.class);
 
-		HelloService helloService= (HelloService)		 context.getBean("helloService");
+		HelloService helloService= (HelloService)context.getBean("helloService");
 
 		helloService.test();
 
