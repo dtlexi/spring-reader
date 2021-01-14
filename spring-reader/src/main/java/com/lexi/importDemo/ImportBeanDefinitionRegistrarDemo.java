@@ -9,10 +9,10 @@ import org.springframework.core.type.AnnotationMetadata;
 public class ImportBeanDefinitionRegistrarDemo implements ImportBeanDefinitionRegistrar {
 	@Override
 	public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
-		RootBeanDefinition rootBeanDefinition=new RootBeanDefinition();
-		rootBeanDefinition.setBeanClass(Test1.class);
-		rootBeanDefinition.setScope(BeanDefinition.SCOPE_SINGLETON);
-
-		registry.registerBeanDefinition("test1",rootBeanDefinition);
+//		RootBeanDefinition rootBeanDefinition=new RootBeanDefinition();
+//		rootBeanDefinition.setBeanClass(Test1.class);
+//		rootBeanDefinition.setScope(BeanDefinition.SCOPE_SINGLETON);
+//
+//		registry.registerBeanDefinition("test1",rootBeanDefinition);
 	}
 }

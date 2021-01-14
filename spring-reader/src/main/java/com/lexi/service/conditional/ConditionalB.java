@@ -4,7 +4,7 @@ import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Component;
 
 @Component
-@Conditional(ConditionalOnBean.class)
+//@Conditional(ConditionalOnBean.class)
 public class ConditionalB {
 
 }
