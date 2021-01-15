@@ -194,6 +194,9 @@ class ConfigurationClassParser {
 			}
 		}
 
+		// 处理@DeferredImportSelector
+		// Spring Boot 中自动配置使用的就是@DeferredImportSelector注解
+		// @DeferredImportSelector 注解是在其他配置文件都解析完成后才解析的
 		this.deferredImportSelectorHandler.process();
 	}
 
@@ -623,6 +626,10 @@ class ConfigurationClassParser {
 							exclusionFilter = exclusionFilter.or(selectorFilter);
 						}
 
+						// 如果当前是DeferredImportSelector
+						// 先将当前DeferredImportSelector 添加到集合中去
+						// 这边不会处理他
+						// 只有等到最后所有配置类都解析完成之后才会解析他
 						if (selector instanceof DeferredImportSelector) {
 							this.deferredImportSelectorHandler.handle(configClass, (DeferredImportSelector) selector);
 						}
@@ -821,6 +828,7 @@ class ConfigurationClassParser {
 		 */
 		public void handle(ConfigurationClass configClass, DeferredImportSelector importSelector) {
 			DeferredImportSelectorHolder holder = new DeferredImportSelectorHolder(configClass, importSelector);
+			// deferredImportSelectors 不为空
 			if (this.deferredImportSelectors == null) {
 				DeferredImportSelectorGroupingHandler handler = new DeferredImportSelectorGroupingHandler();
 				handler.register(holder);
