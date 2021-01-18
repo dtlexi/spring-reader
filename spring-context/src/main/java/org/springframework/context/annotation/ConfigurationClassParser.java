@@ -828,7 +828,9 @@ class ConfigurationClassParser {
 		 */
 		public void handle(ConfigurationClass configClass, DeferredImportSelector importSelector) {
 			DeferredImportSelectorHolder holder = new DeferredImportSelectorHolder(configClass, importSelector);
-			// deferredImportSelectors 不为空
+			// deferredImportSelectors 正常情况下不为空
+			// deferredImportSelectors 为空表示在处理完所有配置类后处理DeferredImportSelector对象是，
+			// DeferredImportSelector注册的还是一个DeferredImportSelector
 			if (this.deferredImportSelectors == null) {
 				DeferredImportSelectorGroupingHandler handler = new DeferredImportSelectorGroupingHandler();
 				handler.register(holder);
@@ -840,13 +842,25 @@ class ConfigurationClassParser {
 		}
 
 		public void process() {
+			// 获取当前所有的DeferredImportSelector的对象
 			List<DeferredImportSelectorHolder> deferredImports = this.deferredImportSelectors;
 			this.deferredImportSelectors = null;
 			try {
 				if (deferredImports != null) {
 					DeferredImportSelectorGroupingHandler handler = new DeferredImportSelectorGroupingHandler();
+					// 排序
 					deferredImports.sort(DEFERRED_IMPORT_COMPARATOR);
+
+					// 这边其实就是分组的意思
+					// 将相同Group的import添加到一个组中处理
+					// Group定义了process()和selectImports()方法。
+					// 这样做的目的是同一组的selectImports使用相同的处理方法
+					// spring 这边有一个默认实现的组，DefaultDeferredImportSelectorGroup
+					// DefaultDeferredImportSelectorGroup的process方法就是调用DeferredImportSelector的selectImports方法，然后添加到列表中
+					// DefaultDeferredImportSelectorGroup在selectImports()方法中返回了上面的集合
 					deferredImports.forEach(handler::register);
+
+					// 处理
 					handler.processGroupImports();
 				}
 			}
@@ -864,21 +878,35 @@ class ConfigurationClassParser {
 		private final Map<AnnotationMetadata, ConfigurationClass> configurationClasses = new HashMap<>();
 
 		public void register(DeferredImportSelectorHolder deferredImport) {
+			// 获取当前组
 			Class<? extends Group> group = deferredImport.getImportSelector().getImportGroup();
+
+			// 如果Group不为空，就使用Group做map的key
+			// 否则就使用deferredImport做map的key
+			// 入关存在不存在，map中的value都是一个group，只是Spring定义的默认Group,DefaultDeferredImportSelectorGroup
+			// computeIfAbsent方法的意思是
+			// 		如果map中存在当前key，返回当前key对应的value
+			//		如果map中不存在，会调用后面的方法添加value到map中，并且返回当前value
 			DeferredImportSelectorGrouping grouping = this.groupings.computeIfAbsent(
 					(group != null ? group : deferredImport),
 					key -> new DeferredImportSelectorGrouping(createGroup(group)));
+
+			// 将当前import添加到组中
 			grouping.add(deferredImport);
 			this.configurationClasses.put(deferredImport.getConfigurationClass().getMetadata(),
 					deferredImport.getConfigurationClass());
 		}
 
 		public void processGroupImports() {
+			// 循环当前所有的组
 			for (DeferredImportSelectorGrouping grouping : this.groupings.values()) {
 				Predicate<String> exclusionFilter = grouping.getCandidateFilter();
+				// grouping.getImports()
+				// 调用组的process，之后调用组的selectImports
 				grouping.getImports().forEach(entry -> {
 					ConfigurationClass configurationClass = this.configurationClasses.get(entry.getMetadata());
 					try {
+						// 继续处理当前配置类
 						processImports(configurationClass, asSourceClass(configurationClass, exclusionFilter),
 								Collections.singleton(asSourceClass(entry.getImportClassName(), exclusionFilter)),
 								exclusionFilter, false);
@@ -945,10 +973,13 @@ class ConfigurationClassParser {
 		 * @return each import with its associated configuration class
 		 */
 		public Iterable<Group.Entry> getImports() {
+			// 首先循环遍历当前组中所有的deferredImports
+			// 调用当前组的process方法，同意处理
 			for (DeferredImportSelectorHolder deferredImport : this.deferredImports) {
 				this.group.process(deferredImport.getConfigurationClass().getMetadata(),
 						deferredImport.getImportSelector());
 			}
+			// 调用当前组的selectImports
 			return this.group.selectImports();
 		}
 
