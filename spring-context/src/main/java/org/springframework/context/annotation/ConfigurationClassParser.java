@@ -862,7 +862,7 @@ class ConfigurationClassParser {
 					// spring 这边有一个默认实现的组，DefaultDeferredImportSelectorGroup
 					// DefaultDeferredImportSelectorGroup的process方法就是调用DeferredImportSelector的selectImports方法，然后添加到列表中
 					// DefaultDeferredImportSelectorGroup在selectImports()方法中返回了上面的集合
-					
+
 					deferredImports.forEach(handler::register);
 
 					// 处理
