@@ -15,7 +15,7 @@ import org.springframework.context.annotation.*;
 @EnableAspectJAutoProxy(proxyTargetClass = false,exposeProxy = true)
 @ImportResource("classpath:beans.xml")
 //@Import(ImportBeanDefinitionRegistrarDemo.class)
-@Import({ImportBeanSelectorDeferrd.class, ImportBeanSelectorDeferrd2.class})
+//@Import({ImportBeanSelectorDeferrd.class, ImportBeanSelectorDeferrd2.class})
 public class SpringConfig implements BeanFactoryAware {
 	@Bean
 	public HelloServiceCreateByAnnoBean createHelloServiceCreateByAnnoBean()

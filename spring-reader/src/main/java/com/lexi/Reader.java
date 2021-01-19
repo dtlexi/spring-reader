@@ -2,6 +2,7 @@ package com.lexi;
 
 import com.lexi.config.SpringConfig;
 import com.lexi.edit.TestPropertyEditor;
+import com.lexi.importDemo.Test4;
 import com.lexi.properties.Postman;
 import com.lexi.service.autowire.HelloServiceAutowireByType;
 import com.lexi.service.conditional.ConditionalB;
@@ -26,33 +27,33 @@ public class Reader {
 
 //		HelloServiceAutowired1 helloServiceAutowired1=context.getBean(HelloServiceAutowired1.class);
 
-		HelloService helloService= (HelloService)context.getBean("helloService");
-
-		helloService.test();
-
-		IJdkDynamicAopService jdkDynamicAopService=context.getBean(IJdkDynamicAopService.class);
-		jdkDynamicAopService.say();
-
-		System.out.println(context.getBean(Postman.class));
-		System.out.println(jdkDynamicAopService);
-
-		SpringConfig config=context.getBean(SpringConfig.class);
-		config.createHelloServiceCreateByAnnoBean();
-
-		context.getBean(HelloServiceAutowireByType.class);
-		config.test();
-
-		TestFactoryBean testFactoryBean= context.getBean(TestFactoryBean.class);
-		FactoryBeanObject factoryBeanObject1= context.getBean(FactoryBeanObject.class);
-
-		System.out.println(factoryBeanObject1);
-
-		IHelloServiceAutowired helloServiceAutowired=context.getBean(IHelloServiceAutowired.class);
-
-		HelloServicePrototype helloServicePrototype=context.getBean(HelloServicePrototype.class);
-
-		ConditionalB conditionalB=context.getBean(ConditionalB.class);
-		System.out.println(conditionalB);
+//		HelloService helloService= (HelloService)context.getBean("helloService");
+//
+//		helloService.test();
+//
+//		IJdkDynamicAopService jdkDynamicAopService=context.getBean(IJdkDynamicAopService.class);
+//		jdkDynamicAopService.say();
+//
+//		System.out.println(context.getBean(Postman.class));
+//		System.out.println(jdkDynamicAopService);
+//
+//		SpringConfig config=context.getBean(SpringConfig.class);
+//		config.createHelloServiceCreateByAnnoBean();
+//
+//		context.getBean(HelloServiceAutowireByType.class);
+//		config.test();
+//
+//		TestFactoryBean testFactoryBean= context.getBean(TestFactoryBean.class);
+//		FactoryBeanObject factoryBeanObject1= context.getBean(FactoryBeanObject.class);
+//
+//		System.out.println(factoryBeanObject1);
+//
+//		IHelloServiceAutowired helloServiceAutowired=context.getBean(IHelloServiceAutowired.class);
+//
+//		HelloServicePrototype helloServicePrototype=context.getBean(HelloServicePrototype.class);
+//
+//		ConditionalB conditionalB=context.getBean(ConditionalB.class);
+		System.out.println(context.getBean(Test4.class));
 	}
 
 //	public static void main(String[] args) {
