@@ -3,6 +3,7 @@ package com.lexi;
 import com.lexi.applicationEvent.service.OrderService;
 import com.lexi.config.SpringConfig;
 import com.lexi.edit.TestPropertyEditor;
+import com.lexi.importDemo.Test4;
 import com.lexi.properties.Postman;
 import com.lexi.service.autowire.HelloServiceAutowireByType;
 import com.lexi.service.conditional.ConditionalB;
@@ -22,9 +23,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Reader {
-//	public static void main(String[] args) throws Exception {
-//		AnnotationConfigApplicationContext context=new AnnotationConfigApplicationContext(SpringConfig.class);
-//
+	public static void main(String[] args) throws Exception {
+		AnnotationConfigApplicationContext context=new AnnotationConfigApplicationContext(SpringConfig.class);
+
 ////		HelloServiceAutowired1 helloServiceAutowired1=context.getBean(HelloServiceAutowired1.class);
 //
 //		HelloService helloService= (HelloService)context.getBean("helloService");
@@ -55,6 +56,8 @@ public class Reader {
 //		ConditionalB conditionalB=context.getBean(ConditionalB.class);
 //		System.out.println(conditionalB);
 //	}
+		System.out.println(context.getBean(Test4.class));
+	}
 
 //	public static void main(String[] args) {
 //		SimpleTypeConverter simpleTypeConverter=new SimpleTypeConverter();
@@ -64,11 +67,11 @@ public class Reader {
 //		System.out.println(simpleTypeConverter.convertIfNecessary("1",int.class));
 //	}
 
-	public static void main(String[] args) {
-		AnnotationConfigApplicationContext context=new AnnotationConfigApplicationContext(SpringConfig.class);
-		OrderService orderService=context.getBean(OrderService.class);
-		orderService.order(10);
-	}
+//	public static void main(String[] args) {
+//		AnnotationConfigApplicationContext context=new AnnotationConfigApplicationContext(SpringConfig.class);
+//		OrderService orderService=context.getBean(OrderService.class);
+//		orderService.order(10);
+//	}
 
 }
 
