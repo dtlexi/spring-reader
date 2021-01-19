@@ -840,12 +840,17 @@ class ConfigurationClassParser {
 		}
 
 		public void process() {
+			// DeferredImportSelectorHolder 包含如下：
+			// 1. 当前@Import注解所在的配置类
+			// 2. 通过当前@Import注解导入的DeferredImportSelector类
 			List<DeferredImportSelectorHolder> deferredImports = this.deferredImportSelectors;
 			this.deferredImportSelectors = null;
 			try {
 				if (deferredImports != null) {
+					// 封装一个Grouping
 					DeferredImportSelectorGroupingHandler handler = new DeferredImportSelectorGroupingHandler();
 					deferredImports.sort(DEFERRED_IMPORT_COMPARATOR);
+					// 注册
 					deferredImports.forEach(handler::register);
 					handler.processGroupImports();
 				}

@@ -215,8 +215,11 @@ public abstract class AbstractApplicationEventMulticaster
 	private Collection<ApplicationListener<?>> retrieveApplicationListeners(
 			ResolvableType eventType, @Nullable Class<?> sourceType, @Nullable ListenerRetriever retriever) {
 
+		// 所有满足条件的监听器
 		List<ApplicationListener<?>> allListeners = new ArrayList<>();
+		// 实现了ApplicationListener接口的监听器
 		Set<ApplicationListener<?>> listeners;
+		// 通过注解实现的监听器
 		Set<String> listenerBeans;
 		synchronized (this.retrievalMutex) {
 			listeners = new LinkedHashSet<>(this.defaultRetriever.applicationListeners);
